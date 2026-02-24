@@ -29,11 +29,17 @@ export default function Onboarding() {
   };
 
   const handleNext = async () => {
+    // Ensure default value for number inputs
+    const currentAnswers = { ...answers };
+    if (current.type === 'number' && currentAnswers[current.key] === undefined) {
+      currentAnswers[current.key] = 100;
+      setAnswers(currentAnswers);
+    }
     if (step < steps.length - 1) {
       setStep(step + 1);
     } else {
       try {
-        await updateProfile.mutateAsync({ ...answers, onboarding_completed: true });
+        await updateProfile.mutateAsync({ ...currentAnswers, onboarding_completed: true });
         navigate('/dashboard');
       } catch {
         toast.error('Erreur lors de la sauvegarde');
@@ -41,7 +47,12 @@ export default function Onboarding() {
     }
   };
 
-  const hasAnswer = answers[current.key] !== undefined && answers[current.key] !== '';
+  // Auto-set default for number inputs
+  const effectiveAnswers = { ...answers };
+  if (current.type === 'number' && effectiveAnswers[current.key] === undefined) {
+    effectiveAnswers[current.key] = 100;
+  }
+  const hasAnswer = effectiveAnswers[current.key] !== undefined && effectiveAnswers[current.key] !== '';
 
   return (
     <div className="min-h-screen flex flex-col px-6 pt-16 pb-8">
@@ -91,8 +102,13 @@ export default function Onboarding() {
           ) : (
             <input
               type={current.type || 'text'}
-              value={answers[current.key] || ''}
+              value={answers[current.key] ?? (current.type === 'number' ? '100' : '')}
               onChange={(e) => setAnswers({ ...answers, [current.key]: current.type === 'number' ? Number(e.target.value) : e.target.value })}
+              onFocus={() => {
+                if (answers[current.key] === undefined && current.type === 'number') {
+                  setAnswers({ ...answers, [current.key]: 100 });
+                }
+              }}
               placeholder={current.type === 'number' ? '100' : 'Ex: ICT, SMC, Orderflow...'}
               className="glass-input w-full px-4 py-3 rounded-xl text-sm text-foreground placeholder:text-muted-foreground outline-none"
             />
