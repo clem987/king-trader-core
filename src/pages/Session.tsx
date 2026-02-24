@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Lock, ArrowLeft, Camera, Send } from 'lucide-react';
+import { Check, Lock, ArrowLeft, Send } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import BottomNav from '@/components/BottomNav';
+import SessionActiveView from '@/components/session/SessionActiveView';
+import PostSessionBilan from '@/components/session/PostSessionBilan';
 import { useChecklist } from '@/hooks/useChecklist';
 import { useProfile } from '@/hooks/useProfile';
 import { useTrades } from '@/hooks/useTrades';
 import { toast } from 'sonner';
 
-type Phase = 'checklist' | 'trade' | 'review';
+type Phase = 'checklist' | 'active' | 'trade' | 'bilan';
 
 export default function Session() {
   const navigate = useNavigate();
@@ -19,7 +21,7 @@ export default function Session() {
   const [phase, setPhase] = useState<Phase>('checklist');
   const [checked, setChecked] = useState<Set<string>>(new Set());
 
-  // Trade review state
+  // Trade form state
   const [setup, setSetup] = useState('');
   const [result, setResult] = useState('');
   const [respectedPlan, setRespectedPlan] = useState(false);
@@ -48,6 +50,17 @@ export default function Session() {
     return score;
   };
 
+  const resetTradeForm = () => {
+    setSetup('');
+    setResult('');
+    setRespectedPlan(false);
+    setHesitated(false);
+    setFeltFear(false);
+    setRespectedRR(false);
+    setNotes('');
+    setChecked(new Set());
+  };
+
   const handleSubmitTrade = async () => {
     if (!profile) return;
     setSaving(true);
@@ -68,7 +81,6 @@ export default function Session() {
         notes,
       });
 
-      // Update XP
       const newXp = (profile.xp ?? 0) + Math.round(total / 10);
       let newLevel = profile.level || 'Bronze';
       if (newXp >= 500) newLevel = 'King';
@@ -83,9 +95,10 @@ export default function Session() {
       });
 
       toast.success(`Trade enregistré ! Score: ${total}/100`);
-      navigate('/dashboard');
+      resetTradeForm();
+      setPhase('active');
     } catch {
-      toast.error('Erreur lors de l\'enregistrement');
+      toast.error("Erreur lors de l'enregistrement");
     } finally {
       setSaving(false);
     }
@@ -100,7 +113,7 @@ export default function Session() {
         <h1 className="text-xl font-display font-bold">Mode Session</h1>
       </div>
 
-      {maxReached && (
+      {maxReached && phase === 'checklist' && (
         <GlassCard className="mb-4 border-warning/30 text-center">
           <p className="text-sm text-warning font-medium">⚠️ Max trades atteint ({profile?.max_trades_per_day}/jour)</p>
           <p className="text-xs text-muted-foreground mt-1">Discipline = pas de trade de plus</p>
@@ -108,23 +121,15 @@ export default function Session() {
       )}
 
       <AnimatePresence mode="wait">
+        {/* Phase 1: Checklist */}
         {phase === 'checklist' && (
           <motion.div key="checklist" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <p className="text-sm text-muted-foreground mb-4">
-              Valide chaque point avant d'entrer en trade
-            </p>
-
+            <p className="text-sm text-muted-foreground mb-4">Valide chaque point avant d'entrer en trade</p>
             <div className="space-y-2 mb-6">
               {items.map((item) => (
-                <GlassCard
-                  key={item.id}
-                  onClick={() => toggleCheck(item.id)}
-                  className="flex items-center gap-3 cursor-pointer py-3"
-                >
+                <GlassCard key={item.id} onClick={() => toggleCheck(item.id)} className="flex items-center gap-3 cursor-pointer py-3">
                   <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
-                    checked.has(item.id)
-                      ? 'bg-primary'
-                      : 'border border-border'
+                    checked.has(item.id) ? 'bg-primary' : 'border border-border'
                   }`}>
                     {checked.has(item.id) && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
                   </div>
@@ -134,29 +139,60 @@ export default function Session() {
                 </GlassCard>
               ))}
             </div>
-
             <button
-              onClick={() => !maxReached && setPhase('trade')}
-              disabled={!allChecked || maxReached}
+              onClick={() => !maxReached && setPhase('active')}
+              disabled={!allChecked || !!maxReached}
               className={`w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
-                allChecked && !maxReached
-                  ? 'glow-button text-primary-foreground'
-                  : 'glass-card text-muted-foreground cursor-not-allowed'
+                allChecked && !maxReached ? 'glow-button text-primary-foreground' : 'glass-card text-muted-foreground cursor-not-allowed'
               }`}
             >
               {!allChecked ? <Lock className="w-4 h-4" /> : null}
-              {maxReached ? 'Limite atteinte' : !allChecked ? 'Valide toute la checklist' : 'Entrer en trade'}
+              {maxReached ? 'Limite atteinte' : !allChecked ? 'Valide toute la checklist' : 'Entrer en session'}
             </button>
           </motion.div>
         )}
 
+        {/* Phase 2: Active Session */}
+        {phase === 'active' && (
+          <motion.div key="active" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+            <SessionActiveView
+              onTakeTrade={() => {
+                setChecked(new Set());
+                setPhase('trade');
+              }}
+              onEndSession={() => setPhase('bilan')}
+            />
+          </motion.div>
+        )}
+
+        {/* Phase 3: Trade Entry Form */}
         {phase === 'trade' && (
           <motion.div key="trade" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-            <p className="text-sm text-muted-foreground mb-6">
-              Après ton trade, remplis le bilan
-            </p>
+            <p className="text-sm text-muted-foreground mb-4">Valide la checklist puis remplis le bilan</p>
 
-            <div className="space-y-4">
+            {/* Mini checklist */}
+            <div className="space-y-2 mb-4">
+              {items.map((item) => (
+                <GlassCard key={item.id} onClick={() => toggleCheck(item.id)} className="flex items-center gap-3 cursor-pointer py-2.5">
+                  <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
+                    checked.has(item.id) ? 'bg-primary' : 'border border-border'
+                  }`}>
+                    {checked.has(item.id) && <Check className="w-3 h-3 text-primary-foreground" />}
+                  </div>
+                  <span className={`text-xs ${checked.has(item.id) ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    {item.label}
+                  </span>
+                </GlassCard>
+              ))}
+            </div>
+
+            {!allChecked && (
+              <div className="glass-card p-3 mb-4 border border-warning/20 text-center">
+                <p className="text-xs text-warning font-medium">🔒 Valide toute la checklist pour débloquer</p>
+              </div>
+            )}
+
+            <div className={`space-y-4 transition-opacity ${allChecked ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
               <input
                 type="text"
                 placeholder="Setup utilisé (ex: BOS + FVG)"
@@ -164,7 +200,6 @@ export default function Session() {
                 onChange={(e) => setSetup(e.target.value)}
                 className="glass-input w-full px-4 py-3 rounded-xl text-sm text-foreground placeholder:text-muted-foreground outline-none"
               />
-
               <input
                 type="number"
                 placeholder="Résultat en $ (ex: 150 ou -50)"
@@ -174,18 +209,13 @@ export default function Session() {
               />
 
               <p className="text-xs text-muted-foreground font-medium mt-4 mb-2">Auto-évaluation</p>
-
               {[
-                { label: 'J\'ai respecté mon plan', state: respectedPlan, set: setRespectedPlan },
-                { label: 'J\'ai hésité', state: hesitated, set: setHesitated },
-                { label: 'J\'ai ressenti de la peur', state: feltFear, set: setFeltFear },
-                { label: 'J\'ai respecté mon R:R', state: respectedRR, set: setRespectedRR },
+                { label: "J'ai respecté mon plan", state: respectedPlan, set: setRespectedPlan },
+                { label: "J'ai hésité", state: hesitated, set: setHesitated },
+                { label: "J'ai ressenti de la peur", state: feltFear, set: setFeltFear },
+                { label: "J'ai respecté mon R:R", state: respectedRR, set: setRespectedRR },
               ].map(({ label, state, set }) => (
-                <GlassCard
-                  key={label}
-                  onClick={() => set(!state)}
-                  className="flex items-center gap-3 cursor-pointer py-3"
-                >
+                <GlassCard key={label} onClick={() => set(!state)} className="flex items-center gap-3 cursor-pointer py-3">
                   <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
                     state ? 'bg-primary' : 'border border-border'
                   }`}>
@@ -211,6 +241,13 @@ export default function Session() {
                 {saving ? 'Enregistrement...' : 'Valider le trade'}
               </button>
             </div>
+          </motion.div>
+        )}
+
+        {/* Phase 4: Post-session bilan */}
+        {phase === 'bilan' && (
+          <motion.div key="bilan" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <PostSessionBilan />
           </motion.div>
         )}
       </AnimatePresence>
