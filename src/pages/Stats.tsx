@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import GlassCard from '@/components/GlassCard';
 import ScoreRing from '@/components/ScoreRing';
 import BottomNav from '@/components/BottomNav';
@@ -33,6 +34,37 @@ export default function Stats() {
     : 0;
   const horsplan = filtered.filter(t => !t.respected_plan);
   const horsplanCost = horsplan.reduce((s, t) => s + (Number(t.result_amount) || 0), 0);
+
+  // Cumulative PnL chart data
+  const pnlChartData = useMemo(() => {
+    const sorted = [...filtered].sort((a, b) => 
+      new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime()
+    );
+    let cumulative = 0;
+    return sorted.map(t => {
+      cumulative += Number(t.result_amount) || 0;
+      const d = new Date(t.created_at || '');
+      return {
+        date: `${d.getDate()}/${d.getMonth() + 1}`,
+        pnl: cumulative,
+      };
+    });
+  }, [filtered]);
+
+  // Score over time chart data
+  const scoreChartData = useMemo(() => {
+    const sorted = [...filtered].sort((a, b) =>
+      new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime()
+    );
+    return sorted.map((t, i) => {
+      const d = new Date(t.created_at || '');
+      return {
+        date: `${d.getDate()}/${d.getMonth() + 1}`,
+        score: t.total_score ?? 0,
+        avg: Math.round(sorted.slice(0, i + 1).reduce((s, x) => s + (x.total_score ?? 0), 0) / (i + 1)),
+      };
+    });
+  }, [filtered]);
 
   // Weekly performance bars (last 7 days)
   const weekDays = useMemo(() => {
