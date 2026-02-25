@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 export default function PostSessionBilan() {
   const navigate = useNavigate();
   const { todayTrades } = useTrades();
-  const { profile, updateProfile } = useProfile();
+  const { profile } = useProfile();
   const [note, setNote] = useState('');
   const [showed, setShowed] = useState(false);
 
@@ -55,42 +55,42 @@ export default function PostSessionBilan() {
 
       {/* Score global */}
       <GlassCard elevated className="text-center py-6">
-        <p className="text-[10px] font-mono tracking-widest text-muted-foreground mb-3 uppercase">Score Process Final</p>
+        <p className="text-[10px] font-semibold tracking-widest text-muted-foreground mb-3 uppercase">Score Process Final</p>
         <div className="flex justify-center mb-3">
           <ScoreRing score={avgScore} size={100} />
         </div>
         <div className="h-1.5 rounded-full bg-secondary overflow-hidden mx-8 mt-2">
-          <div className="h-full rounded-full bg-orange transition-all" style={{ width: `${avgScore}%` }} />
+          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${avgScore}%` }} />
         </div>
-        <p className="text-[10px] text-muted-foreground mt-2">Min requis: 75% pour valider la session</p>
+        <p className="text-[10px] text-muted-foreground mt-2">Min requis: 70% pour valider la session</p>
       </GlassCard>
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3">
         <GlassCard className="text-center py-4">
-          <p className="text-[9px] font-mono tracking-widest text-muted-foreground">P&L SESSION</p>
-          <p className={`text-2xl font-bold mt-1 ${totalPnl >= 0 ? 'text-success' : 'text-destructive'}`}>
+          <p className="text-[9px] font-semibold tracking-widest text-muted-foreground uppercase">P&L Session</p>
+          <p className={`text-2xl font-display font-bold mt-1 ${totalPnl >= 0 ? 'text-success' : 'text-destructive'}`}>
             {totalPnl >= 0 ? '+' : ''}{totalPnl}$
           </p>
           <p className="text-[10px] text-muted-foreground mt-1">{wins} win · {losses} loss</p>
         </GlassCard>
         <GlassCard className="text-center py-4">
-          <p className="text-[9px] font-mono tracking-widest text-muted-foreground">WIN RATE</p>
-          <p className="text-2xl font-bold mt-1 text-foreground">{winRate}%</p>
+          <p className="text-[9px] font-semibold tracking-widest text-muted-foreground uppercase">Win Rate</p>
+          <p className="text-2xl font-display font-bold mt-1">{winRate}%</p>
           <div className="h-1 rounded-full bg-secondary overflow-hidden mx-4 mt-2">
             <div className="h-full rounded-full bg-success" style={{ width: `${winRate}%` }} />
           </div>
         </GlassCard>
         <GlassCard className="text-center py-4">
-          <p className="text-[9px] font-mono tracking-widest text-muted-foreground">DANS LE PLAN</p>
-          <p className="text-2xl font-bold mt-1">{todayTrades.length - horsplan.length}/{todayTrades.length}</p>
+          <p className="text-[9px] font-semibold tracking-widest text-muted-foreground uppercase">Dans le plan</p>
+          <p className="text-2xl font-display font-bold mt-1">{todayTrades.length - horsplan.length}/{todayTrades.length}</p>
           <p className={`text-[10px] mt-1 ${horsplan.length > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
             {horsplan.length > 0 ? `${horsplan.length} hors plan` : '✓ Aucune déviation'}
           </p>
         </GlassCard>
         <GlassCard className="text-center py-4">
-          <p className="text-[9px] font-mono tracking-widest text-muted-foreground">MEILLEUR TRADE</p>
-          <p className="text-2xl font-bold mt-1 text-success">
+          <p className="text-[9px] font-semibold tracking-widest text-muted-foreground uppercase">Meilleur trade</p>
+          <p className="text-2xl font-display font-bold mt-1 text-success">
             {bestTrade ? `+${Number(bestTrade.result_amount) || 0}$` : '-'}
           </p>
           <p className="text-[10px] text-muted-foreground mt-1">{bestTrade?.setup || '-'}</p>
@@ -104,7 +104,7 @@ export default function PostSessionBilan() {
             <div className="flex items-center gap-3">
               <span className="text-3xl">💸</span>
               <div>
-                <p className="text-xs font-semibold">Coût de l'indiscipline</p>
+                <p className="text-xs font-display font-semibold">Coût de l'indiscipline</p>
                 <p className="text-[10px] text-muted-foreground">Trades hors plan</p>
               </div>
             </div>
@@ -122,43 +122,45 @@ export default function PostSessionBilan() {
         </GlassCard>
       )}
 
-      {/* Détail trades */}
+      {/* Detail trades */}
       <GlassCard className="!p-0">
         <div className="p-4 pb-2">
-          <p className="text-xs font-semibold">Détail des trades</p>
+          <p className="text-xs font-display font-semibold">Détail des trades</p>
         </div>
         <div className="divide-y divide-border/30">
-          {todayTrades.map(t => (
-            <div key={t.id} className="flex items-center justify-between p-4 py-3">
-              <div className="flex items-center gap-3">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                  (Number(t.result_amount) || 0) >= 0 ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'
-                }`}>
-                  {(Number(t.result_amount) || 0) >= 0 ? '✓' : '✗'}
+          {todayTrades.map(t => {
+            const pnl = Number(t.result_amount) || 0;
+            return (
+              <div key={t.id} className="flex items-center justify-between p-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                    pnl >= 0 ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'
+                  }`}>
+                    {pnl >= 0 ? '✓' : '✗'}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{(t as any).pair || t.setup || 'Trade'}</p>
+                    <div className="flex gap-2 items-center">
+                      <p className="text-[10px] text-muted-foreground">Score {t.total_score}%</p>
+                      {(t as any).emotion && <span className="text-[9px]">{(t as any).emotion === 'calm' ? '😌' : (t as any).emotion === 'stressed' ? '😰' : '😐'}</span>}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">{t.setup || 'Trade'}</p>
-                  <p className="text-[10px] text-muted-foreground">Score checklist {t.total_score}%</p>
+                <div className="text-right">
+                  <p className={`text-sm font-bold ${pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {pnl >= 0 ? '+' : ''}{pnl}$
+                  </p>
+                  {!t.respected_plan && <span className="text-[9px] font-bold text-destructive">HORS PLAN</span>}
                 </div>
               </div>
-              <div className="text-right">
-                <p className={`text-sm font-bold ${(Number(t.result_amount) || 0) >= 0 ? 'text-success' : 'text-destructive'}`}>
-                  {(Number(t.result_amount) || 0) >= 0 ? '+' : ''}{t.result_amount}$
-                </p>
-                {!t.respected_plan && (
-                  <span className="text-[9px] font-bold text-destructive">HORS PLAN</span>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </GlassCard>
 
       {/* Note */}
       <GlassCard>
-        <p className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase mb-2">
-          Note de session
-        </p>
+        <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase mb-2">Note de session</p>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
@@ -170,9 +172,9 @@ export default function PostSessionBilan() {
       {/* Save CTA */}
       <button
         onClick={handleSave}
-        className="glow-button w-full py-4 rounded-2xl font-bold text-sm text-primary-foreground flex items-center justify-center gap-2"
+        className="glow-button w-full py-4 rounded-xl font-display font-bold text-sm flex items-center justify-center gap-2"
       >
-        💾 Sauvegarder la session · {avgScore >= 75 ? '+1 streak 🔥' : 'score enregistré'}
+        💾 Sauvegarder la session · {avgScore >= 70 ? '+1 streak 🔥' : 'score enregistré'}
       </button>
     </motion.div>
   );

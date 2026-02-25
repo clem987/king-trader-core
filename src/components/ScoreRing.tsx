@@ -9,17 +9,18 @@ export default function ScoreRing({ score, size = 120, strokeWidth = 8, label }:
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (score / 100) * circumference;
-
-  const getColor = (s: number) => {
-    if (s >= 80) return 'hsl(142, 71%, 45%)';
-    if (s >= 50) return 'hsl(38, 92%, 50%)';
-    return 'hsl(0, 72%, 51%)';
-  };
+  const isGood = score >= 70;
 
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="relative score-ring" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
+          <defs>
+            <linearGradient id={`ring-grad-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={isGood ? 'hsl(142, 71%, 45%)' : 'hsl(36, 90%, 55%)'} />
+              <stop offset="100%" stopColor={isGood ? 'hsl(142, 60%, 35%)' : 'hsl(24, 95%, 53%)'} />
+            </linearGradient>
+          </defs>
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -33,7 +34,7 @@ export default function ScoreRing({ score, size = 120, strokeWidth = 8, label }:
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke={getColor(score)}
+            stroke={`url(#ring-grad-${size})`}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={circumference}
