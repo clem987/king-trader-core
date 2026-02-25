@@ -96,60 +96,81 @@ export type Database = {
         Row: {
           after_photo_url: string | null
           before_photo_url: string | null
+          clarity_score: number | null
           created_at: string | null
           date: string | null
+          direction: string | null
           discipline_score: number | null
+          emotion: string | null
           emotional_management: number | null
           execution_quality: number | null
           felt_fear: boolean | null
           hesitated: boolean | null
           id: string
           notes: string | null
+          pair: string | null
           plan_respect: number | null
+          plan_respected: boolean | null
           respected_plan: boolean | null
           respected_rr: boolean | null
           result_amount: number | null
+          rr_achieved: number | null
           setup: string | null
+          setup_respected: boolean | null
           total_score: number | null
           user_id: string
         }
         Insert: {
           after_photo_url?: string | null
           before_photo_url?: string | null
+          clarity_score?: number | null
           created_at?: string | null
           date?: string | null
+          direction?: string | null
           discipline_score?: number | null
+          emotion?: string | null
           emotional_management?: number | null
           execution_quality?: number | null
           felt_fear?: boolean | null
           hesitated?: boolean | null
           id?: string
           notes?: string | null
+          pair?: string | null
           plan_respect?: number | null
+          plan_respected?: boolean | null
           respected_plan?: boolean | null
           respected_rr?: boolean | null
           result_amount?: number | null
+          rr_achieved?: number | null
           setup?: string | null
+          setup_respected?: boolean | null
           total_score?: number | null
           user_id: string
         }
         Update: {
           after_photo_url?: string | null
           before_photo_url?: string | null
+          clarity_score?: number | null
           created_at?: string | null
           date?: string | null
+          direction?: string | null
           discipline_score?: number | null
+          emotion?: string | null
           emotional_management?: number | null
           execution_quality?: number | null
           felt_fear?: boolean | null
           hesitated?: boolean | null
           id?: string
           notes?: string | null
+          pair?: string | null
           plan_respect?: number | null
+          plan_respected?: boolean | null
           respected_plan?: boolean | null
           respected_rr?: boolean | null
           result_amount?: number | null
+          rr_achieved?: number | null
           setup?: string | null
+          setup_respected?: boolean | null
           total_score?: number | null
           user_id?: string
         }

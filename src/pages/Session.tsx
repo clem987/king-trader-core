@@ -1,17 +1,34 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Lock, ArrowLeft, Send } from 'lucide-react';
+import { Check, Lock, ArrowLeft, X } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import BottomNav from '@/components/BottomNav';
 import SessionActiveView from '@/components/session/SessionActiveView';
 import PostSessionBilan from '@/components/session/PostSessionBilan';
+import TradeFormQCM from '@/components/session/TradeFormQCM';
 import { useChecklist } from '@/hooks/useChecklist';
 import { useProfile } from '@/hooks/useProfile';
 import { useTrades } from '@/hooks/useTrades';
 import { toast } from 'sonner';
 
 type Phase = 'checklist' | 'active' | 'trade' | 'bilan';
+
+function calcDisciplineScore(
+  checklistTotal: number,
+  checklistChecked: number,
+  qcm: { setupRespected: boolean | null; planRespected: boolean | null; emotion: string | null; clarityScore: number | null }
+) {
+  const checklistScore = checklistTotal > 0 ? checklistChecked / checklistTotal : 1;
+  let qcmScore = 0, qcmCount = 0;
+  if (qcm.setupRespected !== null) { qcmScore += qcm.setupRespected ? 1 : 0.2; qcmCount++; }
+  if (qcm.planRespected !== null) { qcmScore += qcm.planRespected ? 1 : 0.2; qcmCount++; }
+  if (qcm.emotion !== null) { qcmScore += qcm.emotion === 'calm' ? 1 : qcm.emotion === 'neutral' ? 0.65 : 0.2; qcmCount++; }
+  if (qcm.clarityScore !== null) { qcmScore += qcm.clarityScore / 5; qcmCount++; }
+  const qcmFinal = qcmCount > 0 ? qcmScore / qcmCount : 0;
+  const qcmWeight = qcmCount > 0 ? 0.4 : 0;
+  return Math.round((checklistScore * (1 - qcmWeight) + (qcmCount > 0 ? qcmFinal * 0.4 : 0)) * 100);
+}
 
 export default function Session() {
   const navigate = useNavigate();
@@ -20,19 +37,12 @@ export default function Session() {
   const { todayTrades, addTrade } = useTrades();
   const [phase, setPhase] = useState<Phase>('checklist');
   const [checked, setChecked] = useState<Set<string>>(new Set());
-
-  // Trade form state
-  const [setup, setSetup] = useState('');
-  const [result, setResult] = useState('');
-  const [respectedPlan, setRespectedPlan] = useState(false);
-  const [hesitated, setHesitated] = useState(false);
-  const [feltFear, setFeltFear] = useState(false);
-  const [respectedRR, setRespectedRR] = useState(false);
-  const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showAbandon, setShowAbandon] = useState(false);
 
   const allChecked = items.length > 0 && checked.size === items.length;
   const maxReached = profile && todayTrades.length >= (profile.max_trades_per_day ?? 3);
+  const progress = items.length > 0 ? (checked.size / items.length) * 100 : 0;
 
   const toggleCheck = (id: string) => {
     const next = new Set(checked);
@@ -41,44 +51,31 @@ export default function Session() {
     setChecked(next);
   };
 
-  const calculateScore = () => {
-    let score = 0;
-    if (respectedPlan) score += 30;
-    if (!hesitated) score += 20;
-    if (!feltFear) score += 20;
-    if (respectedRR) score += 30;
-    return score;
-  };
-
-  const resetTradeForm = () => {
-    setSetup('');
-    setResult('');
-    setRespectedPlan(false);
-    setHesitated(false);
-    setFeltFear(false);
-    setRespectedRR(false);
-    setNotes('');
-    setChecked(new Set());
-  };
-
-  const handleSubmitTrade = async () => {
+  const handleSubmitTrade = async (trade: any) => {
     if (!profile) return;
     setSaving(true);
-    const total = calculateScore();
+    const total = calcDisciplineScore(
+      items.length, checked.size,
+      { setupRespected: trade.setup_respected, planRespected: trade.plan_respected, emotion: trade.emotion, clarityScore: trade.clarity_score }
+    );
     try {
       await addTrade.mutateAsync({
-        setup,
-        result_amount: Number(result) || 0,
-        respected_plan: respectedPlan,
-        hesitated,
-        felt_fear: feltFear,
-        respected_rr: respectedRR,
-        discipline_score: respectedPlan ? 30 : 0,
-        execution_quality: !hesitated ? 20 : 0,
-        plan_respect: respectedRR ? 30 : 0,
-        emotional_management: !feltFear ? 20 : 0,
+        pair: trade.pair,
+        direction: trade.direction,
+        setup: trade.setup,
+        result_amount: trade.result_amount,
+        rr_achieved: trade.rr_achieved,
+        setup_respected: trade.setup_respected,
+        plan_respected: trade.plan_respected,
+        respected_plan: trade.plan_respected,
+        emotion: trade.emotion,
+        clarity_score: trade.clarity_score,
+        discipline_score: Math.round(total * 0.6),
+        execution_quality: trade.setup_respected ? 20 : 0,
+        plan_respect: trade.plan_respected ? 30 : 0,
+        emotional_management: trade.emotion === 'calm' ? 20 : trade.emotion === 'neutral' ? 13 : 4,
         total_score: total,
-        notes,
+        notes: trade.notes,
       });
 
       const newXp = (profile.xp ?? 0) + Math.round(total / 10);
@@ -95,7 +92,7 @@ export default function Session() {
       });
 
       toast.success(`Trade enregistré ! Score: ${total}/100`);
-      resetTradeForm();
+      setChecked(new Set());
       setPhase('active');
     } catch {
       toast.error("Erreur lors de l'enregistrement");
@@ -104,19 +101,37 @@ export default function Session() {
     }
   };
 
+  const handleAbandon = () => {
+    setShowAbandon(false);
+    navigate('/dashboard');
+  };
+
   return (
-    <div className="min-h-screen pb-24 px-4 pt-12">
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate('/dashboard')} className="text-muted-foreground">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <h1 className="text-xl font-display font-bold">Mode Session</h1>
+    <div className="min-h-screen pb-24 px-5 pt-14">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <button onClick={() => phase === 'checklist' ? navigate('/dashboard') : setShowAbandon(true)} className="text-muted-foreground">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h1 className="text-lg font-display font-bold">
+              {phase === 'checklist' ? 'Pré-Session' : phase === 'active' ? 'Session Mode™' : phase === 'trade' ? 'Nouveau Trade' : 'Bilan'}
+            </h1>
+            <p className="text-[10px] text-muted-foreground">{profile?.strategy || 'Ma stratégie'}</p>
+          </div>
+        </div>
+        {(phase === 'active' || phase === 'trade') && (
+          <button onClick={() => setShowAbandon(true)} className="w-9 h-9 rounded-xl glass-card flex items-center justify-center">
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        )}
       </div>
 
       {maxReached && phase === 'checklist' && (
         <GlassCard className="mb-4 border-warning/30 text-center">
-          <p className="text-sm text-warning font-medium">⚠️ Max trades atteint ({profile?.max_trades_per_day}/jour)</p>
-          <p className="text-xs text-muted-foreground mt-1">Discipline = pas de trade de plus</p>
+          <p className="text-sm text-warning font-semibold">⚠️ Max trades atteint ({profile?.max_trades_per_day}/jour)</p>
+          <p className="text-[10px] text-muted-foreground mt-1">Discipline = pas de trade de plus</p>
         </GlassCard>
       )}
 
@@ -124,30 +139,49 @@ export default function Session() {
         {/* Phase 1: Checklist */}
         {phase === 'checklist' && (
           <motion.div key="checklist" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <p className="text-sm text-muted-foreground mb-4">Valide chaque point avant d'entrer en trade</p>
+            {/* Progress */}
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Validation</span>
+                <span className="text-xs font-semibold text-primary">{checked.size}/{items.length}</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }} />
+              </div>
+              {allChecked && <p className="text-[10px] text-success font-semibold mt-2">✓ Checklist complète — Tu es prêt.</p>}
+            </div>
+
             <div className="space-y-2 mb-6">
-              {items.map((item) => (
-                <GlassCard key={item.id} onClick={() => toggleCheck(item.id)} className="flex items-center gap-3 cursor-pointer py-3">
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
-                    checked.has(item.id) ? 'bg-primary' : 'border border-border'
+              {items.map((item, i) => (
+                <button
+                  key={item.id}
+                  onClick={() => toggleCheck(item.id)}
+                  className={`flex items-center gap-3.5 w-full text-left px-4 py-4 rounded-2xl transition-all border ${
+                    checked.has(item.id) ? 'glass-card-elevated border-primary/30' : 'glass-card border-border'
+                  }`}
+                  style={{ animationDelay: `${i * 0.06}s` }}
+                >
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
+                    checked.has(item.id) ? 'glow-button' : 'border-2 border-muted-foreground/30'
                   }`}>
-                    {checked.has(item.id) && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
+                    {checked.has(item.id) && <Check className="w-3.5 h-3.5" />}
                   </div>
-                  <span className={`text-sm ${checked.has(item.id) ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  <span className={`text-sm ${checked.has(item.id) ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
                     {item.label}
                   </span>
-                </GlassCard>
+                </button>
               ))}
             </div>
+
             <button
               onClick={() => !maxReached && setPhase('active')}
               disabled={!allChecked || !!maxReached}
-              className={`w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
-                allChecked && !maxReached ? 'glow-button text-primary-foreground' : 'glass-card text-muted-foreground cursor-not-allowed'
+              className={`w-full py-4 rounded-xl font-display font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                allChecked && !maxReached ? 'glow-button' : 'glass-card text-muted-foreground cursor-not-allowed'
               }`}
             >
               {!allChecked ? <Lock className="w-4 h-4" /> : null}
-              {maxReached ? 'Limite atteinte' : !allChecked ? 'Valide toute la checklist' : 'Entrer en session'}
+              {maxReached ? 'Limite atteinte' : !allChecked ? `${items.length - checked.size} règle${items.length - checked.size > 1 ? 's' : ''} restante${items.length - checked.size > 1 ? 's' : ''}` : 'Entrer en Trade →'}
             </button>
           </motion.div>
         )}
@@ -165,81 +199,43 @@ export default function Session() {
           </motion.div>
         )}
 
-        {/* Phase 3: Trade Entry Form */}
+        {/* Phase 3: Trade Entry Form with QCM */}
         {phase === 'trade' && (
           <motion.div key="trade" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-            <p className="text-sm text-muted-foreground mb-4">Valide la checklist puis remplis le bilan</p>
-
             {/* Mini checklist */}
-            <div className="space-y-2 mb-4">
-              {items.map((item) => (
-                <GlassCard key={item.id} onClick={() => toggleCheck(item.id)} className="flex items-center gap-3 cursor-pointer py-2.5">
-                  <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
-                    checked.has(item.id) ? 'bg-primary' : 'border border-border'
-                  }`}>
-                    {checked.has(item.id) && <Check className="w-3 h-3 text-primary-foreground" />}
-                  </div>
-                  <span className={`text-xs ${checked.has(item.id) ? 'text-foreground' : 'text-muted-foreground'}`}>
-                    {item.label}
-                  </span>
-                </GlassCard>
-              ))}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Checklist rapide</span>
+                <span className="text-xs font-semibold text-primary">{checked.size}/{items.length}</span>
+              </div>
+              <div className="space-y-1.5">
+                {items.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => toggleCheck(item.id)}
+                    className={`flex items-center gap-3 w-full text-left px-3 py-2.5 rounded-xl transition-all border text-xs ${
+                      checked.has(item.id) ? 'glass-card-elevated border-primary/30' : 'glass-card border-border'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${
+                      checked.has(item.id) ? 'glow-button' : 'border border-muted-foreground/30'
+                    }`}>
+                      {checked.has(item.id) && <Check className="w-3 h-3" />}
+                    </div>
+                    <span className={checked.has(item.id) ? 'text-foreground' : 'text-muted-foreground'}>{item.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {!allChecked && (
-              <div className="glass-card p-3 mb-4 border border-warning/20 text-center">
-                <p className="text-xs text-warning font-medium">🔒 Valide toute la checklist pour débloquer</p>
+              <div className="glass-card p-3 mb-4 border border-warning/20 text-center rounded-xl">
+                <p className="text-xs text-warning font-semibold">🔒 Valide toute la checklist pour débloquer le formulaire</p>
               </div>
             )}
 
-            <div className={`space-y-4 transition-opacity ${allChecked ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
-              <input
-                type="text"
-                placeholder="Setup utilisé (ex: BOS + FVG)"
-                value={setup}
-                onChange={(e) => setSetup(e.target.value)}
-                className="glass-input w-full px-4 py-3 rounded-xl text-sm text-foreground placeholder:text-muted-foreground outline-none"
-              />
-              <input
-                type="number"
-                placeholder="Résultat en $ (ex: 150 ou -50)"
-                value={result}
-                onChange={(e) => setResult(e.target.value)}
-                className="glass-input w-full px-4 py-3 rounded-xl text-sm text-foreground placeholder:text-muted-foreground outline-none"
-              />
-
-              <p className="text-xs text-muted-foreground font-medium mt-4 mb-2">Auto-évaluation</p>
-              {[
-                { label: "J'ai respecté mon plan", state: respectedPlan, set: setRespectedPlan },
-                { label: "J'ai hésité", state: hesitated, set: setHesitated },
-                { label: "J'ai ressenti de la peur", state: feltFear, set: setFeltFear },
-                { label: "J'ai respecté mon R:R", state: respectedRR, set: setRespectedRR },
-              ].map(({ label, state, set }) => (
-                <GlassCard key={label} onClick={() => set(!state)} className="flex items-center gap-3 cursor-pointer py-3">
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
-                    state ? 'bg-primary' : 'border border-border'
-                  }`}>
-                    {state && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
-                  </div>
-                  <span className="text-sm">{label}</span>
-                </GlassCard>
-              ))}
-
-              <textarea
-                placeholder="Notes personnelles..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="glass-input w-full px-4 py-3 rounded-xl text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none h-20"
-              />
-
-              <button
-                onClick={handleSubmitTrade}
-                disabled={saving}
-                className="glow-button w-full py-3.5 rounded-xl font-semibold text-sm text-primary-foreground flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                <Send className="w-4 h-4" />
-                {saving ? 'Enregistrement...' : 'Valider le trade'}
-              </button>
+            <div className={`transition-opacity ${allChecked ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
+              <TradeFormQCM onSubmit={handleSubmitTrade} saving={saving} />
             </div>
           </motion.div>
         )}
@@ -251,6 +247,21 @@ export default function Session() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Abandon dialog */}
+      {showAbandon && (
+        <div className="fixed inset-0 z-[200] bg-black/75 backdrop-blur-sm flex items-center justify-center p-6" onClick={() => setShowAbandon(false)}>
+          <div className="glass-card-elevated p-6 max-w-xs w-full text-center" onClick={e => e.stopPropagation()}>
+            <p className="text-3xl mb-3">⚠️</p>
+            <p className="font-display font-bold text-lg mb-2">Abandonner la session ?</p>
+            <p className="text-xs text-muted-foreground mb-5">Ton streak sera remis à zéro. La discipline, c'est aussi finir ce qu'on commence.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowAbandon(false)} className="flex-1 glow-button py-3 rounded-xl font-display font-bold text-sm">Continuer</button>
+              <button onClick={handleAbandon} className="flex-1 glass-card py-3 rounded-xl font-display font-bold text-sm text-destructive border border-destructive/20">Abandonner</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <BottomNav />
     </div>
