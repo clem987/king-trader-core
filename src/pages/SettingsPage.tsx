@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, X, LogOut } from 'lucide-react';
+import { ArrowLeft, Plus, X, LogOut, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import BottomNav from '@/components/BottomNav';
@@ -134,10 +134,19 @@ export default function SettingsPage() {
         </div>
       </GlassCard>
 
+      {/* Strategies link */}
+      <button
+        onClick={() => navigate('/strategies')}
+        className="glass-card w-full py-3 px-4 rounded-xl text-sm font-display font-semibold flex items-center justify-between anim-fadeup-2 mb-4"
+      >
+        <span>Gérer les stratégies & checklists</span>
+        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+      </button>
+
       {/* Logout */}
       <button
         onClick={handleLogout}
-        className="glass-card w-full py-3 rounded-xl text-sm font-display font-semibold text-destructive flex items-center justify-center gap-2 border border-destructive/20 anim-fadeup-2"
+        className="glass-card w-full py-3 rounded-xl text-sm font-display font-semibold text-destructive flex items-center justify-center gap-2 border border-destructive/20 anim-fadeup-3"
       >
         <LogOut className="w-4 h-4" />
         Déconnexion

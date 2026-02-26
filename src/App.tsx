@@ -12,6 +12,7 @@ import Session from "./pages/Session";
 import Journal from "./pages/Journal";
 import Stats from "./pages/Stats";
 import SettingsPage from "./pages/SettingsPage";
+import StrategiesPage from "./pages/StrategiesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
               <Route path="/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+              <Route path="/strategies" element={<ProtectedRoute><StrategiesPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
