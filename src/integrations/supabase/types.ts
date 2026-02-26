@@ -92,6 +92,106 @@ export type Database = {
         }
         Relationships: []
       }
+      strategies: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          market: string | null
+          max_trades: number | null
+          name: string
+          risk_max: number | null
+          rr_min: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          market?: string | null
+          max_trades?: number | null
+          name: string
+          risk_max?: number | null
+          rr_min?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          market?: string | null
+          max_trades?: number | null
+          name?: string
+          risk_max?: number | null
+          rr_min?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      strategy_checklist_items: {
+        Row: {
+          checklist_id: string
+          created_at: string | null
+          id: string
+          is_checked: boolean | null
+          order_index: number | null
+          text: string
+        }
+        Insert: {
+          checklist_id: string
+          created_at?: string | null
+          id?: string
+          is_checked?: boolean | null
+          order_index?: number | null
+          text: string
+        }
+        Update: {
+          checklist_id?: string
+          created_at?: string | null
+          id?: string
+          is_checked?: boolean | null
+          order_index?: number | null
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategy_checklist_items_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "strategy_checklists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      strategy_checklists: {
+        Row: {
+          created_at: string | null
+          id: string
+          strategy_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          strategy_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          strategy_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategy_checklists_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trades: {
         Row: {
           after_photo_url: string | null
