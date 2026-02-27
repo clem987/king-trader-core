@@ -55,7 +55,7 @@ export function useStrategyChecklists(strategyId: string | null) {
   };
 
   const addItem = useMutation({
-    mutationFn: async ({ type, text }: { type: 'before' | 'during' | 'after'; text: string }) => {
+    mutationFn: async ({ type, text, is_required = true }: { type: 'before' | 'during' | 'after'; text: string; is_required?: boolean }) => {
       const clId = getChecklistId(type);
       if (!clId) throw new Error('Checklist not found');
       const items = getItems(type);
@@ -63,6 +63,7 @@ export function useStrategyChecklists(strategyId: string | null) {
         checklist_id: clId,
         text,
         order_index: items.length,
+        is_required,
       });
       if (error) throw error;
     },
