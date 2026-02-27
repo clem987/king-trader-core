@@ -6,6 +6,7 @@ export interface StrategyChecklistItem {
   checklist_id: string;
   text: string;
   is_checked: boolean;
+  is_required: boolean;
   order_index: number;
 }
 
