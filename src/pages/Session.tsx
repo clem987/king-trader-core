@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Lock, ArrowLeft, X } from 'lucide-react';
+import { Check, Lock, ArrowLeft, X, ClipboardList } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import BottomNav from '@/components/BottomNav';
 import SessionActiveView from '@/components/session/SessionActiveView';
 import PostSessionBilan from '@/components/session/PostSessionBilan';
 import TradeFormQCM from '@/components/session/TradeFormQCM';
-import { useChecklist } from '@/hooks/useChecklist';
+import { useStrategies } from '@/hooks/useStrategies';
+import { useStrategyChecklists, StrategyChecklistItem } from '@/hooks/useStrategyChecklists';
 import { useProfile } from '@/hooks/useProfile';
 import { useTrades } from '@/hooks/useTrades';
 import { toast } from 'sonner';
@@ -32,7 +33,8 @@ function calcDisciplineScore(
 
 export default function Session() {
   const navigate = useNavigate();
-  const { items } = useChecklist();
+  const { activeStrategy } = useStrategies();
+  const { getItems, resetChecks } = useStrategyChecklists(activeStrategy?.id || null);
   const { profile, updateProfile } = useProfile();
   const { todayTrades, addTrade } = useTrades();
   const [phase, setPhase] = useState<Phase>('checklist');
@@ -40,7 +42,10 @@ export default function Session() {
   const [saving, setSaving] = useState(false);
   const [showAbandon, setShowAbandon] = useState(false);
 
-  const allChecked = items.length > 0 && checked.size === items.length;
+  // Use strategy "before" checklist items
+  const items: StrategyChecklistItem[] = getItems('before');
+  const requiredItems = items.filter(i => i.is_required);
+  const allRequiredChecked = requiredItems.length > 0 ? requiredItems.every(i => checked.has(i.id)) : items.length === 0;
   const maxReached = profile && todayTrades.length >= (profile.max_trades_per_day ?? 3);
   const progress = items.length > 0 ? (checked.size / items.length) * 100 : 0;
 
@@ -49,6 +54,14 @@ export default function Session() {
     if (next.has(id)) next.delete(id);
     else next.add(id);
     setChecked(next);
+  };
+
+  const handleStartSession = () => {
+    if (!maxReached && allRequiredChecked) {
+      // Reset checks in DB for next session
+      resetChecks.mutate();
+      setPhase('active');
+    }
   };
 
   const handleSubmitTrade = async (trade: any) => {
@@ -118,7 +131,7 @@ export default function Session() {
             <h1 className="text-lg font-display font-bold">
               {phase === 'checklist' ? 'Pré-Session' : phase === 'active' ? 'Session Mode™' : phase === 'trade' ? 'Nouveau Trade' : 'Bilan'}
             </h1>
-            <p className="text-[10px] text-muted-foreground">{profile?.strategy || 'Ma stratégie'}</p>
+            <p className="text-[10px] text-muted-foreground">{activeStrategy?.name || profile?.strategy || 'Ma stratégie'}</p>
           </div>
         </div>
         {(phase === 'active' || phase === 'trade') && (
@@ -148,40 +161,70 @@ export default function Session() {
               <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                 <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }} />
               </div>
-              {allChecked && <p className="text-[10px] text-success font-semibold mt-2">✓ Checklist complète — Tu es prêt.</p>}
+              {allRequiredChecked && items.length > 0 && <p className="text-[10px] text-success font-semibold mt-2">✓ Tous les items obligatoires validés — Tu es prêt.</p>}
             </div>
 
-            <div className="space-y-2 mb-6">
-              {items.map((item, i) => (
-                <button
-                  key={item.id}
-                  onClick={() => toggleCheck(item.id)}
-                  className={`flex items-center gap-3.5 w-full text-left px-4 py-4 rounded-2xl transition-all border ${
-                    checked.has(item.id) ? 'glass-card-elevated border-primary/30' : 'glass-card border-border'
-                  }`}
-                  style={{ animationDelay: `${i * 0.06}s` }}
-                >
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
-                    checked.has(item.id) ? 'glow-button' : 'border-2 border-muted-foreground/30'
-                  }`}>
-                    {checked.has(item.id) && <Check className="w-3.5 h-3.5" />}
-                  </div>
-                  <span className={`text-sm ${checked.has(item.id) ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-                    {item.label}
-                  </span>
-                </button>
-              ))}
-            </div>
+            {items.length === 0 ? (
+              <GlassCard className="mb-4 text-center">
+                <p className="text-sm text-muted-foreground py-4">
+                  Aucune checklist configurée.
+                  {!activeStrategy && ' Crée une stratégie dans les réglages.'}
+                  {activeStrategy && ' Ajoute des items dans les réglages de ta stratégie.'}
+                </p>
+              </GlassCard>
+            ) : (
+              <div className="space-y-2 mb-6">
+                {items.map((item, i) => (
+                  <button
+                    key={item.id}
+                    onClick={() => toggleCheck(item.id)}
+                    className={`flex items-center gap-3.5 w-full text-left px-4 py-4 rounded-2xl transition-all border ${
+                      checked.has(item.id) ? 'glass-card-elevated border-primary/30' : 'glass-card border-border'
+                    }`}
+                    style={{ animationDelay: `${i * 0.06}s` }}
+                  >
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
+                      checked.has(item.id) ? 'glow-button' : 'border-2 border-muted-foreground/30'
+                    }`}>
+                      {checked.has(item.id) && <Check className="w-3.5 h-3.5" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        {item.is_required ? (
+                          <Lock className="w-3 h-3 text-primary shrink-0" />
+                        ) : (
+                          <ClipboardList className="w-3 h-3 text-muted-foreground shrink-0" />
+                        )}
+                        <span className={`text-sm ${checked.has(item.id) ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                          {item.text}
+                        </span>
+                      </div>
+                      <span className={`text-[9px] ml-4.5 ${item.is_required ? 'text-primary' : 'text-muted-foreground'}`}>
+                        {item.is_required ? 'OBLIGATOIRE' : 'RECOMMANDÉ'}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
 
             <button
-              onClick={() => !maxReached && setPhase('active')}
-              disabled={!allChecked || !!maxReached}
+              onClick={handleStartSession}
+              disabled={!allRequiredChecked || !!maxReached || items.length === 0}
               className={`w-full py-4 rounded-xl font-display font-bold text-sm flex items-center justify-center gap-2 transition-all ${
-                allChecked && !maxReached ? 'glow-button' : 'glass-card text-muted-foreground cursor-not-allowed'
+                allRequiredChecked && !maxReached && items.length > 0 ? 'glow-button' : 'glass-card text-muted-foreground cursor-not-allowed'
               }`}
             >
-              {!allChecked ? <Lock className="w-4 h-4" /> : null}
-              {maxReached ? 'Limite atteinte' : !allChecked ? `${items.length - checked.size} règle${items.length - checked.size > 1 ? 's' : ''} restante${items.length - checked.size > 1 ? 's' : ''}` : 'Entrer en Trade →'}
+              {maxReached ? (
+                'Limite atteinte'
+              ) : !allRequiredChecked ? (
+                <>
+                  <Lock className="w-4 h-4" />
+                  🔒 Session verrouillée
+                </>
+              ) : (
+                '✓ Lancer la session'
+              )}
             </button>
           </motion.div>
         )}
@@ -202,39 +245,10 @@ export default function Session() {
         {/* Phase 3: Trade Entry Form with QCM */}
         {phase === 'trade' && (
           <motion.div key="trade" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-            {/* Mini checklist */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Checklist rapide</span>
-                <span className="text-xs font-semibold text-primary">{checked.size}/{items.length}</span>
-              </div>
-              <div className="space-y-1.5">
-                {items.map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => toggleCheck(item.id)}
-                    className={`flex items-center gap-3 w-full text-left px-3 py-2.5 rounded-xl transition-all border text-xs ${
-                      checked.has(item.id) ? 'glass-card-elevated border-primary/30' : 'glass-card border-border'
-                    }`}
-                  >
-                    <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${
-                      checked.has(item.id) ? 'glow-button' : 'border border-muted-foreground/30'
-                    }`}>
-                      {checked.has(item.id) && <Check className="w-3 h-3" />}
-                    </div>
-                    <span className={checked.has(item.id) ? 'text-foreground' : 'text-muted-foreground'}>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Mini checklist using "during" items */}
+            <DuringChecklist strategyId={activeStrategy?.id || null} checked={checked} toggleCheck={toggleCheck} />
 
-            {!allChecked && (
-              <div className="glass-card p-3 mb-4 border border-warning/20 text-center rounded-xl">
-                <p className="text-xs text-warning font-semibold">🔒 Valide toute la checklist pour débloquer le formulaire</p>
-              </div>
-            )}
-
-            <div className={`transition-opacity ${allChecked ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
+            <div className={`transition-opacity ${checked.size >= 0 ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
               <TradeFormQCM onSubmit={handleSubmitTrade} saving={saving} />
             </div>
           </motion.div>
@@ -264,6 +278,57 @@ export default function Session() {
       )}
 
       <BottomNav />
+    </div>
+  );
+}
+
+// Mini "during" checklist for trade phase
+function DuringChecklist({ strategyId, checked, toggleCheck }: {
+  strategyId: string | null;
+  checked: Set<string>;
+  toggleCheck: (id: string) => void;
+}) {
+  const { getItems } = useStrategyChecklists(strategyId);
+  const items = getItems('during');
+  const requiredItems = items.filter(i => i.is_required);
+  const allRequiredChecked = requiredItems.every(i => checked.has(i.id));
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Checklist entrée</span>
+        <span className="text-xs font-semibold text-primary">{[...checked].filter(id => items.some(i => i.id === id)).length}/{items.length}</span>
+      </div>
+      <div className="space-y-1.5">
+        {items.map(item => (
+          <button
+            key={item.id}
+            onClick={() => toggleCheck(item.id)}
+            className={`flex items-center gap-3 w-full text-left px-3 py-2.5 rounded-xl transition-all border text-xs ${
+              checked.has(item.id) ? 'glass-card-elevated border-primary/30' : 'glass-card border-border'
+            }`}
+          >
+            <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${
+              checked.has(item.id) ? 'glow-button' : 'border border-muted-foreground/30'
+            }`}>
+              {checked.has(item.id) && <Check className="w-3 h-3" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1">
+                {item.is_required ? <Lock className="w-2.5 h-2.5 text-primary" /> : <ClipboardList className="w-2.5 h-2.5 text-muted-foreground" />}
+                <span className={checked.has(item.id) ? 'text-foreground' : 'text-muted-foreground'}>{item.text}</span>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+      {!allRequiredChecked && requiredItems.length > 0 && (
+        <div className="glass-card p-3 mb-4 mt-2 border border-warning/20 text-center rounded-xl">
+          <p className="text-xs text-warning font-semibold">🔒 Valide les items obligatoires pour débloquer le formulaire</p>
+        </div>
+      )}
     </div>
   );
 }
