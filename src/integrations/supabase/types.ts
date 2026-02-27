@@ -134,6 +134,7 @@ export type Database = {
           created_at: string | null
           id: string
           is_checked: boolean | null
+          is_required: boolean
           order_index: number | null
           text: string
         }
@@ -142,6 +143,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_checked?: boolean | null
+          is_required?: boolean
           order_index?: number | null
           text: string
         }
@@ -150,6 +152,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_checked?: boolean | null
+          is_required?: boolean
           order_index?: number | null
           text?: string
         }
