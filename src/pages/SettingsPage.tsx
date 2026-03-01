@@ -107,41 +107,17 @@ export default function SettingsPage() {
         </div>
       </GlassCard>
 
-      {/* Checklist */}
-      <GlassCard className="mb-4 anim-fadeup-1">
-        <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase mb-4">Checklist pré-session</p>
-        <div className="space-y-2 mb-4">
-          {items.map((item) => (
-            <div key={item.id} className="flex items-center justify-between py-2.5 px-3 glass-card rounded-xl">
-              <span className="text-sm">{item.label}</span>
-              <button onClick={() => removeItem.mutate(item.id)} className="text-muted-foreground hover:text-destructive transition-colors">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <input
-            value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
-            placeholder="Nouvel élément..."
-            className="glass-input flex-1 px-4 py-3 rounded-xl text-sm text-foreground placeholder:text-muted-foreground outline-none"
-            onKeyDown={(e) => e.key === 'Enter' && handleAddChecklist()}
-          />
-          <button onClick={handleAddChecklist} className="glow-button w-12 rounded-xl flex items-center justify-center">
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-      </GlassCard>
-
-      {/* Strategies link */}
+      {/* Strategies & Checklists link */}
       <button
         onClick={() => navigate('/strategies')}
-        className="glass-card w-full py-3 px-4 rounded-xl text-sm font-display font-semibold flex items-center justify-between anim-fadeup-2 mb-4"
+        className="glow-button w-full py-3.5 px-4 rounded-xl text-sm font-display font-bold flex items-center justify-center gap-2 anim-fadeup-1 mb-4"
       >
-        <span>Gérer les stratégies & checklists</span>
-        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        <ClipboardList className="w-4 h-4" />
+        Gérer les stratégies & checklists
       </button>
+      <p className="text-[9px] text-muted-foreground text-center mb-4 -mt-2">
+        Crée tes checklists Avant / Pendant / Après session avec des suggestions guidées
+      </p>
 
       {/* Logout */}
       <button
