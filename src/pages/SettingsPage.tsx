@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, X, LogOut, ChevronRight } from 'lucide-react';
+import { ArrowLeft, LogOut, ClipboardList } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import BottomNav from '@/components/BottomNav';
