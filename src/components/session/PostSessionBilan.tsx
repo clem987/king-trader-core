@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { Check, Lock, ClipboardList } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import ScoreRing from '@/components/ScoreRing';
 import { useTrades } from '@/hooks/useTrades';
 import { useProfile } from '@/hooks/useProfile';
+import { useStrategies } from '@/hooks/useStrategies';
+import { useStrategyChecklists } from '@/hooks/useStrategyChecklists';
 import { toast } from 'sonner';
 
 export default function PostSessionBilan() {
