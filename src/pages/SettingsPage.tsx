@@ -42,12 +42,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleAddChecklist = async () => {
-    if (!newItem.trim()) return;
-    await addItem.mutateAsync(newItem.trim());
-    setNewItem('');
-  };
-
   const handleLogout = async () => {
     await signOut();
     navigate('/');
