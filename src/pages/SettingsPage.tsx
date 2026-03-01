@@ -11,9 +11,7 @@ import { toast } from 'sonner';
 export default function SettingsPage() {
   const navigate = useNavigate();
   const { profile, updateProfile } = useProfile();
-  const { items, addItem, removeItem } = useChecklist();
   const { signOut } = useAuth();
-  const [newItem, setNewItem] = useState('');
   const [market, setMarket] = useState('');
   const [maxRisk, setMaxRisk] = useState('');
   const [minRR, setMinRR] = useState('');
