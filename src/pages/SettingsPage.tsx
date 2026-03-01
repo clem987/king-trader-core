@@ -5,7 +5,6 @@ import GlassCard from '@/components/GlassCard';
 import BottomNav from '@/components/BottomNav';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/lib/auth';
-import { useAuth } from '@/lib/auth';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
