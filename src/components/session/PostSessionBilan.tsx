@@ -1,18 +1,34 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { Check, Lock, ClipboardList } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import ScoreRing from '@/components/ScoreRing';
 import { useTrades } from '@/hooks/useTrades';
 import { useProfile } from '@/hooks/useProfile';
+import { useStrategies } from '@/hooks/useStrategies';
+import { useStrategyChecklists } from '@/hooks/useStrategyChecklists';
 import { toast } from 'sonner';
 
 export default function PostSessionBilan() {
   const navigate = useNavigate();
   const { todayTrades } = useTrades();
   const { profile } = useProfile();
+  const { activeStrategy } = useStrategies();
+  const { getItems } = useStrategyChecklists(activeStrategy?.id || null);
+  const afterItems = getItems('after');
+  const [afterChecked, setAfterChecked] = useState<Set<string>>(new Set());
   const [note, setNote] = useState('');
   const [showed, setShowed] = useState(false);
+
+  const toggleAfterCheck = (id: string) => {
+    const next = new Set(afterChecked);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setAfterChecked(next);
+  };
+
+  const afterProgress = afterItems.length > 0 ? (afterChecked.size / afterItems.length) * 100 : 0;
 
   useEffect(() => { setTimeout(() => setShowed(true), 100); }, []);
 
@@ -157,6 +173,45 @@ export default function PostSessionBilan() {
           })}
         </div>
       </GlassCard>
+
+      {/* After-session checklist */}
+      {afterItems.length > 0 && (
+        <GlassCard>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Checklist post-session</span>
+            <span className="text-xs font-semibold text-primary">{afterChecked.size}/{afterItems.length}</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-secondary overflow-hidden mb-3">
+            <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${afterProgress}%` }} />
+          </div>
+          <div className="space-y-1.5">
+            {afterItems.map(item => (
+              <button
+                key={item.id}
+                onClick={() => toggleAfterCheck(item.id)}
+                className={`flex items-center gap-3 w-full text-left px-3 py-2.5 rounded-xl transition-all border text-xs ${
+                  afterChecked.has(item.id) ? 'glass-card-elevated border-primary/30' : 'glass-card border-border'
+                }`}
+              >
+                <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${
+                  afterChecked.has(item.id) ? 'glow-button' : 'border border-muted-foreground/30'
+                }`}>
+                  {afterChecked.has(item.id) && <Check className="w-3 h-3" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1">
+                    {item.is_required ? <Lock className="w-2.5 h-2.5 text-primary" /> : <ClipboardList className="w-2.5 h-2.5 text-muted-foreground" />}
+                    <span className={afterChecked.has(item.id) ? 'text-foreground' : 'text-muted-foreground'}>{item.text}</span>
+                  </div>
+                  <span className={`text-[9px] ml-3.5 ${item.is_required ? 'text-primary' : 'text-muted-foreground'}`}>
+                    {item.is_required ? 'OBLIGATOIRE' : 'RECOMMANDÉ'}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </GlassCard>
+      )}
 
       {/* Note */}
       <GlassCard>
