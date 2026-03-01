@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import BottomNav from '@/components/BottomNav';
 import { useProfile } from '@/hooks/useProfile';
-import { useChecklist } from '@/hooks/useChecklist';
+import { useAuth } from '@/lib/auth';
 import { useAuth } from '@/lib/auth';
 import { toast } from 'sonner';
 
