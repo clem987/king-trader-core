@@ -14,8 +14,21 @@ export default function PostSessionBilan() {
   const navigate = useNavigate();
   const { todayTrades } = useTrades();
   const { profile } = useProfile();
+  const { activeStrategy } = useStrategies();
+  const { getItems } = useStrategyChecklists(activeStrategy?.id || null);
+  const afterItems = getItems('after');
+  const [afterChecked, setAfterChecked] = useState<Set<string>>(new Set());
   const [note, setNote] = useState('');
   const [showed, setShowed] = useState(false);
+
+  const toggleAfterCheck = (id: string) => {
+    const next = new Set(afterChecked);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setAfterChecked(next);
+  };
+
+  const afterProgress = afterItems.length > 0 ? (afterChecked.size / afterItems.length) * 100 : 0;
 
   useEffect(() => { setTimeout(() => setShowed(true), 100); }, []);
 
