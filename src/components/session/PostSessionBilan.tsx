@@ -174,6 +174,45 @@ export default function PostSessionBilan() {
         </div>
       </GlassCard>
 
+      {/* After-session checklist */}
+      {afterItems.length > 0 && (
+        <GlassCard>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Checklist post-session</span>
+            <span className="text-xs font-semibold text-primary">{afterChecked.size}/{afterItems.length}</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-secondary overflow-hidden mb-3">
+            <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${afterProgress}%` }} />
+          </div>
+          <div className="space-y-1.5">
+            {afterItems.map(item => (
+              <button
+                key={item.id}
+                onClick={() => toggleAfterCheck(item.id)}
+                className={`flex items-center gap-3 w-full text-left px-3 py-2.5 rounded-xl transition-all border text-xs ${
+                  afterChecked.has(item.id) ? 'glass-card-elevated border-primary/30' : 'glass-card border-border'
+                }`}
+              >
+                <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0 ${
+                  afterChecked.has(item.id) ? 'glow-button' : 'border border-muted-foreground/30'
+                }`}>
+                  {afterChecked.has(item.id) && <Check className="w-3 h-3" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1">
+                    {item.is_required ? <Lock className="w-2.5 h-2.5 text-primary" /> : <ClipboardList className="w-2.5 h-2.5 text-muted-foreground" />}
+                    <span className={afterChecked.has(item.id) ? 'text-foreground' : 'text-muted-foreground'}>{item.text}</span>
+                  </div>
+                  <span className={`text-[9px] ml-3.5 ${item.is_required ? 'text-primary' : 'text-muted-foreground'}`}>
+                    {item.is_required ? 'OBLIGATOIRE' : 'RECOMMANDÉ'}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </GlassCard>
+      )}
+
       {/* Note */}
       <GlassCard>
         <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase mb-2">Note de session</p>
