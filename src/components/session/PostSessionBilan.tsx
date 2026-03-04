@@ -35,9 +35,13 @@ export default function PostSessionBilan() {
   const totalPnl = todayTrades.reduce((s, t) => s + (Number(t.result_amount) || 0), 0);
   const wins = todayTrades.filter(t => (Number(t.result_amount) || 0) > 0).length;
   const losses = todayTrades.length - wins;
-  const avgScore = todayTrades.length > 0
-    ? Math.round(todayTrades.reduce((s, t) => s + (t.total_score ?? 0), 0) / todayTrades.length)
+  // Trade avg = pre-session (40%) + QCM (30%) = max 70 points
+  const avgTradeScore = todayTrades.length > 0
+    ? todayTrades.reduce((s, t) => s + (t.total_score ?? 0), 0) / todayTrades.length
     : 0;
+  // Post-session checklist = 30% of final score
+  const postSessionScore = afterItems.length > 0 ? (afterChecked.size / afterItems.length) * 30 : 30;
+  const avgScore = Math.round(avgTradeScore + postSessionScore);
   const horsplan = todayTrades.filter(t => !t.respected_plan);
   const horsplanPnl = horsplan.reduce((s, t) => s + (Number(t.result_amount) || 0), 0);
   const winRate = todayTrades.length > 0 ? Math.round((wins / todayTrades.length) * 100) : 0;
@@ -74,6 +78,23 @@ export default function PostSessionBilan() {
         <p className="text-[10px] font-semibold tracking-widest text-muted-foreground mb-3 uppercase">Score Process Final</p>
         <div className="flex justify-center mb-3">
           <ScoreRing score={avgScore} size={100} />
+        </div>
+        {/* Score breakdown */}
+        <div className="flex justify-center gap-4 mb-2">
+          <div className="text-center">
+            <p className="text-[9px] text-muted-foreground uppercase">Pré-session</p>
+            <p className="text-xs font-bold text-primary">40%</p>
+          </div>
+          <div className="text-center">
+            <p className="text-[9px] text-muted-foreground uppercase">QCM Trade</p>
+            <p className="text-xs font-bold text-primary">30%</p>
+          </div>
+          <div className="text-center">
+            <p className="text-[9px] text-muted-foreground uppercase">Post-session</p>
+            <p className="text-xs font-bold" style={{ color: afterItems.length > 0 && afterChecked.size < afterItems.length ? 'hsl(var(--warning))' : 'hsl(var(--success))' }}>
+              {Math.round(postSessionScore)}/30
+            </p>
+          </div>
         </div>
         <div className="h-1.5 rounded-full bg-secondary overflow-hidden mx-8 mt-2">
           <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${avgScore}%` }} />
