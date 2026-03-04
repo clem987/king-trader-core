@@ -2,30 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 @layer base {
   :root {
-    --background: 220 30% 4%;
-    --foreground: 0 0% 94%;
+    --background: 222 47% 6%;
+    --foreground: 214 32% 91%;
 
-    --card: 220 20% 6%;
-    --card-foreground: 0 0% 94%;
+    --card: 222 35% 9%;
+    --card-foreground: 214 32% 91%;
+    --card-alt: 222 30% 13%;
 
-    --popover: 220 20% 6%;
-    --popover-foreground: 0 0% 94%;
+    --popover: 222 35% 9%;
+    --popover-foreground: 214 32% 91%;
 
-    --primary: 36 90% 55%;
-    --primary-foreground: 220 30% 4%;
+    --primary: 24 95% 53%;
+    --primary-foreground: 222 47% 6%;
 
-    --secondary: 220 15% 10%;
-    --secondary-foreground: 0 0% 85%;
+    --secondary: 222 25% 10%;
+    --secondary-foreground: 215 20% 65%;
 
-    --muted: 220 10% 14%;
-    --muted-foreground: 220 5% 45%;
+    --muted: 222 15% 16%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 36 90% 55%;
-    --accent-foreground: 220 30% 4%;
+    --accent: 24 95% 53%;
+    --accent-foreground: 222 47% 6%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -33,37 +34,37 @@
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 48 96% 53%;
+    --warning-foreground: 0 0% 0%;
 
     --orange: 24 95% 53%;
     --orange-foreground: 0 0% 0%;
 
-    --gold: 36 90% 55%;
-    --gold-foreground: 220 30% 4%;
+    --gold: 43 96% 56%;
+    --gold-foreground: 222 47% 6%;
 
-    --border: 220 10% 12%;
-    --input: 220 10% 12%;
-    --ring: 36 90% 55%;
+    --border: 222 15% 12%;
+    --input: 222 15% 12%;
+    --ring: 24 95% 53%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    --glass-bg: rgba(255, 255, 255, 0.04);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.07);
+    --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
     --glass-blur: blur(20px);
 
-    --glow-primary: 0 0 40px rgba(245, 166, 35, 0.15);
-    --glow-accent: 0 0 60px rgba(245, 166, 35, 0.1);
+    --glow-primary: 0 0 24px rgba(249, 115, 22, 0.15);
+    --glow-accent: 0 0 60px rgba(249, 115, 22, 0.1);
 
-    --sidebar-background: 220 20% 5%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 36 90% 55%;
-    --sidebar-primary-foreground: 220 30% 4%;
-    --sidebar-accent: 220 15% 10%;
-    --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 220 10% 12%;
-    --sidebar-ring: 36 90% 55%;
+    --sidebar-background: 222 40% 7%;
+    --sidebar-foreground: 215 20% 65%;
+    --sidebar-primary: 24 95% 53%;
+    --sidebar-primary-foreground: 222 47% 6%;
+    --sidebar-accent: 222 25% 10%;
+    --sidebar-accent-foreground: 214 32% 91%;
+    --sidebar-border: 222 15% 12%;
+    --sidebar-ring: 24 95% 53%;
   }
 }
 
@@ -85,6 +86,11 @@
 }
 
 @layer components {
+  .font-mono-num {
+    font-family: 'Space Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
   .glass-card {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
@@ -95,8 +101,8 @@
   }
 
   .glass-card-elevated {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.09);
     box-shadow: var(--glass-shadow), var(--glow-primary);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
@@ -112,18 +118,18 @@
 
   .glass-input:focus {
     border-color: hsl(var(--primary));
-    box-shadow: 0 0 0 2px rgba(245, 166, 35, 0.15);
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
   }
 
   .glow-button {
-    background: linear-gradient(135deg, hsl(36, 90%, 55%), hsl(30, 85%, 45%));
-    box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3), 0 0 40px rgba(245, 166, 35, 0.1);
+    background: linear-gradient(135deg, hsl(24, 95%, 53%), hsl(20, 90%, 42%));
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3), 0 0 40px rgba(249, 115, 22, 0.1);
     transition: all 0.3s ease;
-    color: hsl(220, 30%, 4%);
+    color: hsl(222, 47%, 6%);
   }
 
   .glow-button:hover {
-    box-shadow: 0 6px 25px rgba(245, 166, 35, 0.4), 0 0 60px rgba(245, 166, 35, 0.15);
+    box-shadow: 0 6px 25px rgba(249, 115, 22, 0.4), 0 0 60px rgba(249, 115, 22, 0.15);
     transform: translateY(-1px);
   }
 
@@ -132,25 +138,25 @@
   }
 
   .text-gradient {
-    background: linear-gradient(135deg, hsl(36, 90%, 55%), hsl(24, 95%, 53%));
+    background: linear-gradient(135deg, hsl(24, 95%, 53%), hsl(43, 96%, 56%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .nav-glass {
-    background: rgba(8, 11, 18, 0.92);
+    background: rgba(8, 13, 26, 0.92);
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
   }
 
   .score-ring {
-    filter: drop-shadow(0 0 8px rgba(245, 166, 35, 0.4));
+    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.4));
   }
 
   .progress-glow {
-    box-shadow: 0 0 10px rgba(245, 166, 35, 0.4);
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
   }
 
   /* QCM option styles */
@@ -161,12 +167,12 @@
     color: hsl(var(--muted-foreground));
   }
   .qcm-opt:hover {
-    border-color: rgba(245, 166, 35, 0.2);
+    border-color: rgba(249, 115, 22, 0.2);
     color: hsl(var(--foreground));
   }
   .qcm-opt.active {
-    background: linear-gradient(135deg, hsl(36, 90%, 55%), hsl(30, 85%, 45%));
-    color: hsl(220, 30%, 4%);
+    background: linear-gradient(135deg, hsl(24, 95%, 53%), hsl(20, 90%, 42%));
+    color: hsl(222, 47%, 6%);
     border-color: transparent;
   }
   .qcm-opt.active-success {
@@ -183,9 +189,9 @@
   /* Chip styles */
   .chip {
     @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;
-    background: rgba(245, 166, 35, 0.15);
+    background: rgba(249, 115, 22, 0.15);
     color: hsl(var(--primary));
-    border: 1px solid rgba(245, 166, 35, 0.25);
+    border: 1px solid rgba(249, 115, 22, 0.25);
   }
   .chip-success {
     background: rgba(34, 197, 94, 0.12);
