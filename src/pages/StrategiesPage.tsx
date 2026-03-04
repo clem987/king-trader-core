@@ -357,7 +357,7 @@ export default function StrategiesPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-5 pt-14">
+    <div className="p-4 lg:p-8">
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate('/settings')} className="text-muted-foreground">
           <ArrowLeft className="w-5 h-5" />
