@@ -79,6 +79,23 @@ export default function PostSessionBilan() {
         <div className="flex justify-center mb-3">
           <ScoreRing score={avgScore} size={100} />
         </div>
+        {/* Score breakdown */}
+        <div className="flex justify-center gap-4 mb-2">
+          <div className="text-center">
+            <p className="text-[9px] text-muted-foreground uppercase">Pré-session</p>
+            <p className="text-xs font-bold text-primary">40%</p>
+          </div>
+          <div className="text-center">
+            <p className="text-[9px] text-muted-foreground uppercase">QCM Trade</p>
+            <p className="text-xs font-bold text-primary">30%</p>
+          </div>
+          <div className="text-center">
+            <p className="text-[9px] text-muted-foreground uppercase">Post-session</p>
+            <p className="text-xs font-bold" style={{ color: afterItems.length > 0 && afterChecked.size < afterItems.length ? 'hsl(var(--warning))' : 'hsl(var(--success))' }}>
+              {Math.round(postSessionScore)}/30
+            </p>
+          </div>
+        </div>
         <div className="h-1.5 rounded-full bg-secondary overflow-hidden mx-8 mt-2">
           <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${avgScore}%` }} />
         </div>
