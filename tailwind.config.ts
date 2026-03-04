@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         sans: ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
         display: ['Syne', 'sans-serif'],
+        mono: ['Space Mono', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
