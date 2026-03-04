@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, Plus, Trash2, Edit2, Check, Star, ChevronDown, ChevronUp, X, GripVertical, Lock, ClipboardList, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
-import BottomNav from '@/components/BottomNav';
+
 import { useStrategies, Strategy } from '@/hooks/useStrategies';
 import { useStrategyChecklists } from '@/hooks/useStrategyChecklists';
 import { CHECKLIST_SUGGESTIONS, ChecklistPhase } from '@/lib/checklist-suggestions';
@@ -424,7 +424,7 @@ export default function StrategiesPage() {
         </div>
       )}
 
-      <BottomNav />
+      
     </div>
   );
 }
