@@ -15,6 +15,9 @@ import { toast } from 'sonner';
 
 type Phase = 'checklist' | 'active' | 'trade' | 'bilan';
 
+// Score split: 40% pré-session checklist, 30% QCM post-trade, 30% checklist post-session
+// This function computes the pre-session + QCM part (max 70 points)
+// The post-session 30% is added at bilan save time
 function calcDisciplineScore(
   checklistTotal: number,
   checklistChecked: number,
@@ -27,8 +30,10 @@ function calcDisciplineScore(
   if (qcm.emotion !== null) { qcmScore += qcm.emotion === 'calm' ? 1 : qcm.emotion === 'neutral' ? 0.65 : 0.2; qcmCount++; }
   if (qcm.clarityScore !== null) { qcmScore += qcm.clarityScore / 5; qcmCount++; }
   const qcmFinal = qcmCount > 0 ? qcmScore / qcmCount : 0;
-  const qcmWeight = qcmCount > 0 ? 0.4 : 0;
-  return Math.round((checklistScore * (1 - qcmWeight) + (qcmCount > 0 ? qcmFinal * 0.4 : 0)) * 100);
+  // 40% pre-session + 30% QCM = max 70 points (post-session 30% added later)
+  const preSessionPart = checklistScore * 40;
+  const qcmPart = qcmCount > 0 ? qcmFinal * 30 : 0;
+  return Math.round(preSessionPart + qcmPart);
 }
 
 export default function Session() {

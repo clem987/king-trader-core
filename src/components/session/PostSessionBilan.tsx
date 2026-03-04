@@ -35,9 +35,13 @@ export default function PostSessionBilan() {
   const totalPnl = todayTrades.reduce((s, t) => s + (Number(t.result_amount) || 0), 0);
   const wins = todayTrades.filter(t => (Number(t.result_amount) || 0) > 0).length;
   const losses = todayTrades.length - wins;
-  const avgScore = todayTrades.length > 0
-    ? Math.round(todayTrades.reduce((s, t) => s + (t.total_score ?? 0), 0) / todayTrades.length)
+  // Trade avg = pre-session (40%) + QCM (30%) = max 70 points
+  const avgTradeScore = todayTrades.length > 0
+    ? todayTrades.reduce((s, t) => s + (t.total_score ?? 0), 0) / todayTrades.length
     : 0;
+  // Post-session checklist = 30% of final score
+  const postSessionScore = afterItems.length > 0 ? (afterChecked.size / afterItems.length) * 30 : 30;
+  const avgScore = Math.round(avgTradeScore + postSessionScore);
   const horsplan = todayTrades.filter(t => !t.respected_plan);
   const horsplanPnl = horsplan.reduce((s, t) => s + (Number(t.result_amount) || 0), 0);
   const winRate = todayTrades.length > 0 ? Math.round((wins / todayTrades.length) * 100) : 0;
