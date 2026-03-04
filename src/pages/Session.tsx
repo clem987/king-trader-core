@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Lock, ArrowLeft, X, ClipboardList } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
-import BottomNav from '@/components/BottomNav';
 import SessionActiveView from '@/components/session/SessionActiveView';
 import PostSessionBilan from '@/components/session/PostSessionBilan';
 import TradeFormQCM from '@/components/session/TradeFormQCM';
@@ -15,9 +14,6 @@ import { toast } from 'sonner';
 
 type Phase = 'checklist' | 'active' | 'trade' | 'bilan';
 
-// Score split: 40% pré-session checklist, 30% QCM post-trade, 30% checklist post-session
-// This function computes the pre-session + QCM part (max 70 points)
-// The post-session 30% is added at bilan save time
 function calcDisciplineScore(
   checklistTotal: number,
   checklistChecked: number,
@@ -30,7 +26,6 @@ function calcDisciplineScore(
   if (qcm.emotion !== null) { qcmScore += qcm.emotion === 'calm' ? 1 : qcm.emotion === 'neutral' ? 0.65 : 0.2; qcmCount++; }
   if (qcm.clarityScore !== null) { qcmScore += qcm.clarityScore / 5; qcmCount++; }
   const qcmFinal = qcmCount > 0 ? qcmScore / qcmCount : 0;
-  // 40% pre-session + 30% QCM = max 70 points (post-session 30% added later)
   const preSessionPart = checklistScore * 40;
   const qcmPart = qcmCount > 0 ? qcmFinal * 30 : 0;
   return Math.round(preSessionPart + qcmPart);
@@ -47,7 +42,6 @@ export default function Session() {
   const [saving, setSaving] = useState(false);
   const [showAbandon, setShowAbandon] = useState(false);
 
-  // Use strategy "before" checklist items
   const items: StrategyChecklistItem[] = getItems('before');
   const requiredItems = items.filter(i => i.is_required);
   const allRequiredChecked = requiredItems.length > 0 ? requiredItems.every(i => checked.has(i.id)) : items.length === 0;
@@ -63,7 +57,6 @@ export default function Session() {
 
   const handleStartSession = () => {
     if (!maxReached && allRequiredChecked) {
-      // Reset checks in DB for next session
       resetChecks.mutate();
       setPhase('active');
     }
@@ -125,11 +118,11 @@ export default function Session() {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-5 pt-14">
+    <div className="p-4 lg:p-8 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => phase === 'checklist' ? navigate('/dashboard') : setShowAbandon(true)} className="text-muted-foreground">
+          <button onClick={() => phase === 'checklist' ? navigate('/dashboard') : setShowAbandon(true)} className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
@@ -140,7 +133,7 @@ export default function Session() {
           </div>
         </div>
         {(phase === 'active' || phase === 'trade') && (
-          <button onClick={() => setShowAbandon(true)} className="w-9 h-9 rounded-xl glass-card flex items-center justify-center">
+          <button onClick={() => setShowAbandon(true)} className="w-9 h-9 rounded-xl glass-card flex items-center justify-center hover:bg-muted/50 transition-colors">
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         )}
@@ -154,14 +147,12 @@ export default function Session() {
       )}
 
       <AnimatePresence mode="wait">
-        {/* Phase 1: Checklist */}
         {phase === 'checklist' && (
           <motion.div key="checklist" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            {/* Progress */}
             <div className="mb-5">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Validation</span>
-                <span className="text-xs font-semibold text-primary">{checked.size}/{items.length}</span>
+                <span className="text-xs font-semibold text-primary font-mono-num">{checked.size}/{items.length}</span>
               </div>
               <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                 <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }} />
@@ -220,46 +211,31 @@ export default function Session() {
                 allRequiredChecked && !maxReached && items.length > 0 ? 'glow-button' : 'glass-card text-muted-foreground cursor-not-allowed'
               }`}
             >
-              {maxReached ? (
-                'Limite atteinte'
-              ) : !allRequiredChecked ? (
-                <>
-                  <Lock className="w-4 h-4" />
-                  🔒 Session verrouillée
-                </>
-              ) : (
-                '✓ Lancer la session'
-              )}
+              {maxReached ? 'Limite atteinte' : !allRequiredChecked ? (
+                <><Lock className="w-4 h-4" /> 🔒 Session verrouillée</>
+              ) : '✓ Lancer la session'}
             </button>
           </motion.div>
         )}
 
-        {/* Phase 2: Active Session */}
         {phase === 'active' && (
           <motion.div key="active" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
             <SessionActiveView
-              onTakeTrade={() => {
-                setChecked(new Set());
-                setPhase('trade');
-              }}
+              onTakeTrade={() => { setChecked(new Set()); setPhase('trade'); }}
               onEndSession={() => setPhase('bilan')}
             />
           </motion.div>
         )}
 
-        {/* Phase 3: Trade Entry Form with QCM */}
         {phase === 'trade' && (
           <motion.div key="trade" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-            {/* Mini checklist using "during" items */}
             <DuringChecklist strategyId={activeStrategy?.id || null} checked={checked} toggleCheck={toggleCheck} />
-
             <div className={`transition-opacity ${checked.size >= 0 ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
               <TradeFormQCM onSubmit={handleSubmitTrade} saving={saving} />
             </div>
           </motion.div>
         )}
 
-        {/* Phase 4: Post-session bilan */}
         {phase === 'bilan' && (
           <motion.div key="bilan" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <PostSessionBilan />
@@ -273,7 +249,7 @@ export default function Session() {
           <div className="glass-card-elevated p-6 max-w-xs w-full text-center" onClick={e => e.stopPropagation()}>
             <p className="text-3xl mb-3">⚠️</p>
             <p className="font-display font-bold text-lg mb-2">Abandonner la session ?</p>
-            <p className="text-xs text-muted-foreground mb-5">Ton streak sera remis à zéro. La discipline, c'est aussi finir ce qu'on commence.</p>
+            <p className="text-xs text-muted-foreground mb-5">Ton streak sera remis à zéro.</p>
             <div className="flex gap-3">
               <button onClick={() => setShowAbandon(false)} className="flex-1 glow-button py-3 rounded-xl font-display font-bold text-sm">Continuer</button>
               <button onClick={handleAbandon} className="flex-1 glass-card py-3 rounded-xl font-display font-bold text-sm text-destructive border border-destructive/20">Abandonner</button>
@@ -281,13 +257,10 @@ export default function Session() {
           </div>
         </div>
       )}
-
-      <BottomNav />
     </div>
   );
 }
 
-// Mini "during" checklist for trade phase
 function DuringChecklist({ strategyId, checked, toggleCheck }: {
   strategyId: string | null;
   checked: Set<string>;
@@ -304,7 +277,7 @@ function DuringChecklist({ strategyId, checked, toggleCheck }: {
     <div className="mb-4">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Checklist entrée</span>
-        <span className="text-xs font-semibold text-primary">{[...checked].filter(id => items.some(i => i.id === id)).length}/{items.length}</span>
+        <span className="text-xs font-semibold text-primary font-mono-num">{[...checked].filter(id => items.some(i => i.id === id)).length}/{items.length}</span>
       </div>
       <div className="space-y-1.5">
         {items.map(item => (

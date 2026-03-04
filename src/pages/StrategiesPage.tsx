@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, Plus, Trash2, Edit2, Check, Star, ChevronDown, ChevronUp, X, GripVertical, Lock, ClipboardList, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
-import BottomNav from '@/components/BottomNav';
+
 import { useStrategies, Strategy } from '@/hooks/useStrategies';
 import { useStrategyChecklists } from '@/hooks/useStrategyChecklists';
 import { CHECKLIST_SUGGESTIONS, ChecklistPhase } from '@/lib/checklist-suggestions';
@@ -357,7 +357,7 @@ export default function StrategiesPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-5 pt-14">
+    <div className="p-4 lg:p-8">
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate('/settings')} className="text-muted-foreground">
           <ArrowLeft className="w-5 h-5" />
@@ -424,7 +424,7 @@ export default function StrategiesPage() {
         </div>
       )}
 
-      <BottomNav />
+      
     </div>
   );
 }
