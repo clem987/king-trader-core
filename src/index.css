@@ -214,4 +214,20 @@
   .anim-fadeup-2 { animation: fadeUp 0.5s 0.16s ease both; }
   .anim-fadeup-3 { animation: fadeUp 0.5s 0.24s ease both; }
   .anim-fadeup-4 { animation: fadeUp 0.5s 0.32s ease both; }
+
+  /* Page enter animation */
+  .page-enter {
+    animation: pageEnter 0.25s ease-out both;
+  }
+
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
