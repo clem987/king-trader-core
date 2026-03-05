@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/GlassCard';
 import { useTrades } from '@/hooks/useTrades';
+import EmptyState from '@/components/EmptyState';
 
 type FilterType = 'all' | 'winners' | 'losers';
 
@@ -23,7 +24,7 @@ export default function Journal() {
     : 0;
 
   return (
-    <div className="p-4 lg:p-8">
+    <div className="p-4 lg:p-8 page-enter">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-display font-bold">Journal</h1>
@@ -62,10 +63,12 @@ export default function Journal() {
       {/* Desktop table / mobile cards */}
       <div className="hidden lg:block">
         {filtered.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-3xl mb-3">📋</p>
-            <p className="text-muted-foreground text-sm font-display font-semibold">Aucun trade enregistré</p>
-          </div>
+          <EmptyState
+            icon="📋"
+            title="Aucun trade enregistré"
+            description="Lance ta première session pour commencer à tracker tes trades."
+            action={{ label: 'Lancer une session', to: '/session' }}
+          />
         ) : (
           <div className="glass-card overflow-hidden">
             <table className="w-full">
@@ -118,10 +121,12 @@ export default function Journal() {
       {/* Mobile cards */}
       <div className="lg:hidden space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-3xl mb-3">📋</p>
-            <p className="text-muted-foreground text-sm font-display font-semibold">Aucun trade enregistré</p>
-          </div>
+          <EmptyState
+            icon="📋"
+            title="Aucun trade enregistré"
+            description="Lance ta première session pour commencer à tracker tes trades."
+            action={{ label: 'Lancer une session', to: '/session' }}
+          />
         )}
         {filtered.map((trade, i) => {
           const pnl = Number(trade.result_amount) || 0;

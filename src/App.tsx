@@ -14,6 +14,7 @@ import Journal from "./pages/Journal";
 import Stats from "./pages/Stats";
 import SettingsPage from "./pages/SettingsPage";
 import StrategiesPage from "./pages/StrategiesPage";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/stats" element={<ProtectedRoute><Stats /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             <Route path="/strategies" element={<ProtectedRoute><StrategiesPage /></ProtectedRoute>} />
+            <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
