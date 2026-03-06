@@ -8,6 +8,7 @@ import { useTrades } from '@/hooks/useTrades';
 import { useProfile } from '@/hooks/useProfile';
 import { useStrategies } from '@/hooks/useStrategies';
 import { useStrategyChecklists } from '@/hooks/useStrategyChecklists';
+import { useStreak } from '@/hooks/useStreak';
 import { toast } from 'sonner';
 
 export default function PostSessionBilan() {
@@ -55,8 +56,25 @@ export default function PostSessionBilan() {
     ? { emoji: '⚡', label: 'Session correcte', colorClass: 'text-warning', msg: 'Quelques déviations détectées. Analyse tes trades hors plan pour progresser.' }
     : { emoji: '⚠️', label: 'Session à risque', colorClass: 'text-destructive', msg: 'Trop de trades hors plan. Prends le temps de revoir tes règles.' };
 
-  const handleSave = () => {
-    toast.success(`Session sauvegardée ! ${avgScore >= 75 ? '+1 streak 🔥' : 'Score enregistré'}`);
+  const { updateStreakAfterSession } = useStreak();
+
+  const handleSave = async () => {
+    try {
+      const result = await updateStreakAfterSession(avgScore);
+      if (result?.improved && avgScore >= 75) {
+        toast.success(`🔥 Streak : ${result.newStreak} jour${result.newStreak > 1 ? 's' : ''} !`, {
+          description: 'Continue comme ça !',
+        });
+      } else if (avgScore < 75) {
+        toast.error('Score insuffisant — streak remis à zéro', {
+          description: 'Vise 75% minimum pour maintenir ton streak.',
+        });
+      } else {
+        toast.success('Session sauvegardée !');
+      }
+    } catch {
+      toast.success('Session sauvegardée');
+    }
     navigate('/dashboard');
   };
 

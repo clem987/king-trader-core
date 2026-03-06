@@ -75,7 +75,7 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
         <div className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-muted text-muted-foreground border border-border">
           Free
         </div>
-        <Avatar className="w-7 h-7 cursor-pointer" onClick={() => navigate('/settings')}>
+        <Avatar className="w-7 h-7 cursor-pointer" onClick={() => navigate('/profile')}>
           <AvatarFallback className="bg-card text-[10px] font-bold text-muted-foreground border border-border">
             {(profile?.username || user?.email || 'U')[0].toUpperCase()}
           </AvatarFallback>

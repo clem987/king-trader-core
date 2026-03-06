@@ -1,6 +1,7 @@
-import { Home, Crosshair, BookOpen, BarChart3, Settings, Layers, ChevronRight, X } from 'lucide-react';
+import { Home, Crosshair, BookOpen, BarChart3, Settings, Layers, ChevronRight, X, User } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
+import { usePlanLimits } from '@/hooks/usePlanLimits';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,6 +14,7 @@ const mainNav = [
 
 const secondaryNav = [
   { icon: Layers, label: 'Stratégies', path: '/strategies' },
+  { icon: User, label: 'Mon profil', path: '/profile' },
   { icon: Settings, label: 'Réglages', path: '/settings' },
 ];
 
@@ -25,6 +27,7 @@ export default function AppSidebar({ open, onClose }: AppSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useProfile();
+  const { plan, monthlySessionsUsed } = usePlanLimits();
   const isMobile = useIsMobile();
 
   const handleNav = (path: string) => {
@@ -92,10 +95,11 @@ export default function AppSidebar({ open, onClose }: AppSidebarProps) {
       <div className="px-3 pb-4">
         <div className="glass-card p-3 rounded-xl">
           <p className="text-[10px] text-muted-foreground font-medium">
-            Plan Free · 0/5 sessions
+            Plan {plan === 'free' ? 'Free' : plan.charAt(0).toUpperCase() + plan.slice(1)}
+            {plan === 'free' && ` · ${monthlySessionsUsed}/5 sessions`}
           </p>
           <div className="h-1 rounded-full bg-muted mt-2 overflow-hidden">
-            <div className="h-full rounded-full bg-primary w-0" />
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: plan === 'free' ? `${(monthlySessionsUsed / 5) * 100}%` : '100%' }} />
           </div>
           <button
             onClick={() => handleNav('/pricing')}
