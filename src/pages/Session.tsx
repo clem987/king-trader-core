@@ -126,10 +126,9 @@ export default function Session() {
       await updateProfile.mutateAsync({
         xp: newXp,
         level: newLevel,
-        streak: total >= 70 ? (profile.streak ?? 0) + 1 : 0,
       });
 
-      toast.success(`🏆 Score: ${total}/100 — ${total >= 75 ? '+1 streak !' : 'Bonne session'}`);
+      toast.success(`🏆 Score: ${total}/100`);
       setChecked(new Set());
       setPhase('active');
     } catch {
@@ -257,15 +256,42 @@ export default function Session() {
 
                 <button
                   onClick={handleStartSession}
-                  disabled={!allRequiredChecked || !!maxReached || items.length === 0}
+                  disabled={!allRequiredChecked || !!maxReached || items.length === 0 || !canStartSession}
                   className={`w-full py-4 rounded-2xl font-display font-bold text-sm flex items-center justify-center gap-2 transition-all ${
-                    allRequiredChecked && !maxReached && items.length > 0 ? 'glow-button' : 'glass-card text-muted-foreground cursor-not-allowed'
+                    !canStartSession
+                      ? 'glass-card text-muted-foreground cursor-not-allowed opacity-40'
+                      : allRequiredChecked && !maxReached && items.length > 0
+                      ? 'glow-button'
+                      : 'glass-card text-muted-foreground cursor-not-allowed'
                   }`}
                 >
-                  {maxReached ? '⛔ Limite de trades atteinte' : !allRequiredChecked ? (
-                    <><Lock className="w-4 h-4" /> 🔒 Session verrouillée</>
-                  ) : '⚡ Lancer la session →'}
+                  {!canStartSession
+                    ? '🔒 Limite Free atteinte (5/mois)'
+                    : maxReached
+                    ? '⛔ Limite de trades atteinte'
+                    : !allRequiredChecked
+                    ? <><Lock className="w-4 h-4" /> 🔒 Session verrouillée</>
+                    : '⚡ Lancer la session →'}
                 </button>
+
+                {/* Warning banner — sessions running low */}
+                {plan === 'free' && sessionsRemaining <= 2 && canStartSession && (
+                  <div className="mt-3 p-3 rounded-xl bg-warning/10 border border-warning/20 text-warning text-xs text-center font-semibold">
+                    ⚡ {sessionsRemaining} session{sessionsRemaining > 1 ? 's' : ''} restante{sessionsRemaining > 1 ? 's' : ''} ce mois (Free) —{' '}
+                    <button onClick={() => navigate('/pricing')} className="underline hover:text-primary">Passer à Pro</button>
+                  </div>
+                )}
+
+                {/* Blocked banner */}
+                {plan === 'free' && !canStartSession && (
+                  <div className="mt-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-center">
+                    <div className="text-destructive font-bold text-sm mb-2">🔒 Limite mensuelle atteinte</div>
+                    <div className="text-xs text-muted-foreground mb-3">Tu as utilisé tes 5 sessions gratuites ce mois.</div>
+                    <button onClick={() => navigate('/pricing')} className="glow-button px-6 py-2 rounded-xl text-sm font-bold">
+                      Passer à Pro — Sessions illimitées →
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Right column — strategy preview (desktop only) */}
