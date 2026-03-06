@@ -13,6 +13,7 @@ import { useStrategyChecklists, StrategyChecklistItem } from '@/hooks/useStrateg
 import { useProfile } from '@/hooks/useProfile';
 import { useTrades } from '@/hooks/useTrades';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePlanLimits } from '@/hooks/usePlanLimits';
 import { toast } from 'sonner';
 
 type Phase = 'checklist' | 'active' | 'trade' | 'bilan';
@@ -68,10 +69,23 @@ export default function Session() {
     setChecked(next);
   };
 
+  const { canStartSession, sessionsRemaining, plan, monthlySessionsUsed } = usePlanLimits();
+
   const handleStartSession = () => {
+    if (!canStartSession) return;
     if (!maxReached && allRequiredChecked) {
+      // Monthly session counter
+      const resetAt = new Date((profile as any)?.monthly_sessions_reset_at || '');
+      const now = new Date();
+      const isNewMonth = resetAt.getMonth() !== now.getMonth() || resetAt.getFullYear() !== now.getFullYear();
+
       resetChecks.mutate();
       setPhase('active');
+
+      updateProfile.mutateAsync({
+        monthly_sessions_count: isNewMonth ? 1 : ((profile as any)?.monthly_sessions_count ?? 0) + 1,
+        monthly_sessions_reset_at: isNewMonth ? now.toISOString().split('T')[0] : (profile as any)?.monthly_sessions_reset_at,
+      } as any);
     }
   };
 
