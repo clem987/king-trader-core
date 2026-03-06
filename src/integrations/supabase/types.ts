@@ -40,14 +40,19 @@ export type Database = {
       }
       profiles: {
         Row: {
+          best_streak: number | null
           created_at: string | null
           id: string
+          last_session_date: string | null
           level: string | null
           market: string | null
           max_risk_per_trade: number | null
           max_trades_per_day: number | null
           min_rr: number | null
+          monthly_sessions_count: number | null
+          monthly_sessions_reset_at: string | null
           onboarding_completed: boolean | null
+          plan: string | null
           strategy: string | null
           streak: number | null
           trading_session: string | null
@@ -57,14 +62,19 @@ export type Database = {
           xp: number | null
         }
         Insert: {
+          best_streak?: number | null
           created_at?: string | null
           id?: string
+          last_session_date?: string | null
           level?: string | null
           market?: string | null
           max_risk_per_trade?: number | null
           max_trades_per_day?: number | null
           min_rr?: number | null
+          monthly_sessions_count?: number | null
+          monthly_sessions_reset_at?: string | null
           onboarding_completed?: boolean | null
+          plan?: string | null
           strategy?: string | null
           streak?: number | null
           trading_session?: string | null
@@ -74,14 +84,19 @@ export type Database = {
           xp?: number | null
         }
         Update: {
+          best_streak?: number | null
           created_at?: string | null
           id?: string
+          last_session_date?: string | null
           level?: string | null
           market?: string | null
           max_risk_per_trade?: number | null
           max_trades_per_day?: number | null
           min_rr?: number | null
+          monthly_sessions_count?: number | null
+          monthly_sessions_reset_at?: string | null
           onboarding_completed?: boolean | null
+          plan?: string | null
           strategy?: string | null
           streak?: number | null
           trading_session?: string | null
