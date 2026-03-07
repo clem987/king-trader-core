@@ -4,28 +4,29 @@ import { useProfile } from '@/hooks/useProfile';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/auth';
-
-const navItems = [
-  { label: 'Dashboard', path: '/dashboard' },
-  { label: 'Session', path: '/session' },
-  { label: 'Journal', path: '/journal' },
-  { label: 'Stats', path: '/stats' },
-];
+import { useTranslation } from 'react-i18next';
 
 interface TopbarProps {
   onToggleSidebar?: () => void;
 }
 
 export default function Topbar({ onToggleSidebar }: TopbarProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useProfile();
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
+  const navItems = [
+    { label: t('nav.dashboard'), path: '/dashboard' },
+    { label: t('nav.session'), path: '/session' },
+    { label: t('nav.journal'), path: '/journal' },
+    { label: t('nav.stats'), path: '/stats' },
+  ];
+
   return (
     <header className="h-14 border-b border-border bg-card/80 backdrop-blur-xl flex items-center px-4 lg:px-6 sticky top-0 z-50">
-      {/* Left — Logo */}
       <div className="flex items-center gap-3 min-w-[180px]">
         {isMobile && (
           <button onClick={onToggleSidebar} className="p-1.5 rounded-lg hover:bg-muted transition-colors mr-1">
@@ -43,37 +44,28 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
           )}
         </button>
       </div>
-
-      {/* Center — Nav (desktop) */}
       {!isMobile && (
         <nav className="flex-1 flex items-center justify-center gap-1">
           {navItems.map(item => {
             const isActive = location.pathname === item.path;
             return (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
+              <button key={item.path} onClick={() => navigate(item.path)}
                 className={`px-4 py-1.5 rounded-lg text-xs font-display font-semibold transition-all ${
-                  isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-              >
+                  isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                }`}>
                 {item.label}
               </button>
             );
           })}
         </nav>
       )}
-
-      {/* Right — Streak + Plan + Avatar */}
       <div className="flex items-center gap-2 min-w-[180px] justify-end">
         <div className="chip text-[11px]">
           <Flame className="w-3 h-3" />
-          <span className="font-mono-num">{profile?.streak || 0}j</span>
+          <span className="font-mono-num">{profile?.streak || 0}{t('dashboard.gamification.days')}</span>
         </div>
         <div className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-muted text-muted-foreground border border-border">
-          Free
+          {t('topbar.planFree')}
         </div>
         <Avatar className="w-7 h-7 cursor-pointer" onClick={() => navigate('/profile')}>
           <AvatarFallback className="bg-card text-[10px] font-bold text-muted-foreground border border-border">

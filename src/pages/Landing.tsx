@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Crown, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden">
-      {/* Background glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full blur-[120px]"
         style={{ background: 'radial-gradient(circle, rgba(245,166,35,0.08), transparent 70%)' }} />
 
@@ -36,7 +37,7 @@ export default function Landing() {
           transition={{ delay: 0.5 }}
           className="text-muted-foreground text-sm mt-4 mb-12 italic"
         >
-          "La discipline crée la rentabilité."
+          {t('landing.tagline')}
         </motion.p>
 
         <div className="flex flex-col gap-3 w-full">
@@ -44,15 +45,14 @@ export default function Landing() {
             onClick={() => navigate('/auth?mode=signup')}
             className="glow-button w-full py-3.5 rounded-xl font-display font-bold text-sm flex items-center justify-center gap-2"
           >
-            Créer un compte
+            {t('landing.createAccount')}
             <ArrowRight className="w-4 h-4" />
           </button>
-
           <button
             onClick={() => navigate('/auth?mode=login')}
             className="glass-card w-full py-3.5 rounded-xl font-display font-bold text-sm text-foreground hover:border-primary/20 transition-colors"
           >
-            Se connecter
+            {t('landing.login')}
           </button>
         </div>
       </motion.div>

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const FREE_FEATURES = ['score_process', 'session_basic', 'journal_basic', 'stats_7d'];
 
@@ -9,6 +10,7 @@ interface PremiumGateProps {
 }
 
 export default function PremiumGate({ feature, plan = 'free', children }: PremiumGateProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const hasAccess = plan !== 'free' || FREE_FEATURES.includes(feature);
 
@@ -16,17 +18,12 @@ export default function PremiumGate({ feature, plan = 'free', children }: Premiu
 
   return (
     <div className="relative overflow-hidden rounded-2xl">
-      <div style={{ filter: 'blur(4px)', pointerEvents: 'none', userSelect: 'none' }}>
-        {children}
-      </div>
+      <div style={{ filter: 'blur(4px)', pointerEvents: 'none', userSelect: 'none' }}>{children}</div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/60 backdrop-blur-sm rounded-2xl">
         <div className="text-2xl">🔒</div>
-        <div className="text-sm font-display font-bold text-center px-4">Feature Pro</div>
-        <button
-          onClick={() => navigate('/pricing')}
-          className="glow-button px-5 py-2 rounded-lg text-sm font-bold"
-        >
-          Débloquer →
+        <div className="text-sm font-display font-bold text-center px-4">{t('premium.featurePro')}</div>
+        <button onClick={() => navigate('/pricing')} className="glow-button px-5 py-2 rounded-lg text-sm font-bold">
+          {t('premium.unlock')}
         </button>
       </div>
     </div>
