@@ -43,6 +43,7 @@ export type Database = {
           best_streak: number | null
           created_at: string | null
           id: string
+          language: string | null
           last_session_date: string | null
           level: string | null
           market: string | null
@@ -65,6 +66,7 @@ export type Database = {
           best_streak?: number | null
           created_at?: string | null
           id?: string
+          language?: string | null
           last_session_date?: string | null
           level?: string | null
           market?: string | null
@@ -87,6 +89,7 @@ export type Database = {
           best_streak?: number | null
           created_at?: string | null
           id?: string
+          language?: string | null
           last_session_date?: string | null
           level?: string | null
           market?: string | null
