@@ -233,22 +233,19 @@ export default function Session() {
                         }`}
                         style={{ animationDelay: `${i * 0.05}s` }}
                       >
-                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
-                          checked.has(item.id) ? 'glow-button' : 'border-2 border-muted-foreground/30'
+                         <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
+                          checked.has(item.id) ? 'bg-success border-2 border-success' : 'border-2 border-muted-foreground/30'
                         }`}>
-                          {checked.has(item.id) && <Check className="w-3.5 h-3.5" />}
+                          {checked.has(item.id) && <Check className="w-3.5 h-3.5 text-success-foreground" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            {item.is_required ? <Lock className="w-3 h-3 text-primary shrink-0" /> : <ClipboardList className="w-3 h-3 text-muted-foreground shrink-0" />}
-                            <span className={`text-sm ${checked.has(item.id) ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-                              {item.text}
-                            </span>
-                          </div>
-                          <span className={`text-[9px] ml-4.5 ${item.is_required ? 'text-primary' : 'text-muted-foreground'}`}>
-                            {item.is_required ? 'OBLIGATOIRE' : 'RECOMMANDÉ'}
+                          <span className={`text-sm transition-all ${checked.has(item.id) ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                            {item.text}
                           </span>
                         </div>
+                        {item.is_required && !checked.has(item.id) && (
+                          <span className="text-[8px] font-bold tracking-wider text-primary/70 bg-primary/10 px-1.5 py-0.5 rounded">REQ</span>
+                        )}
                       </button>
                     ))}
                   </div>

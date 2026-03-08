@@ -381,7 +381,17 @@
       "forex": "Ex: London Breakout",
       "crypto": "Ex: BTC Momentum",
       "default": "Ex: Trend Following"
-    }
+    },
+    "splashTagline": "L'app qui transforme ta discipline en rentabilité.",
+    "marketTaglines": {
+      "futures": "Le marché des pros. Volume Profile, niveaux clés, timing précis.",
+      "forex": "24h/24, liquidité maximale. Structure, sessions, news.",
+      "crypto": "Volatilité extrême. Discipline absolue requise.",
+      "stocks": "Earnings, tendances, volume. Patience et rigueur."
+    },
+    "strategyTip": "Une bonne stratégie a un R:R ≥ 2:1 et max 3 trades/jour. King Trader te rappellera ces règles à chaque session.",
+    "whyChecklist": "POURQUOI UNE CHECKLIST ?",
+    "whyChecklistDesc": "Les traders rentables vérifient les mêmes points avant chaque trade. Ces règles bloquent les sessions impulsives."
   },
   "notFound": {
     "title": "404",
