@@ -1,4 +1,4 @@
-import { Crown, Flame, Menu } from 'lucide-react';
+import { Crown, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -17,6 +17,7 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
   const { profile } = useProfile();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const streak = profile?.streak ?? 0;
 
   const navItems = [
     { label: t('nav.dashboard'), path: '/dashboard' },
@@ -60,9 +61,12 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
         </nav>
       )}
       <div className="flex items-center gap-2 min-w-[180px] justify-end">
-        <div className="chip text-[11px]">
-          <Flame className="w-3 h-3" />
-          <span className="font-mono-num">{profile?.streak || 0}{t('dashboard.gamification.days')}</span>
+        <div className={`px-2 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 border ${
+          streak > 0
+            ? 'bg-primary/20 text-primary border-primary/30'
+            : 'bg-muted/20 text-muted-foreground border-border'
+        }`}>
+          🔥 <span className="font-mono-num">{streak}{t('dashboard.gamification.days')}</span>
         </div>
         <div className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-muted text-muted-foreground border border-border">
           {t('topbar.planFree')}

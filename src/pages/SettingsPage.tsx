@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogOut, ClipboardList } from 'lucide-react';
+import { LogOut, ClipboardList, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import { useProfile } from '@/hooks/useProfile';
@@ -52,19 +52,15 @@ export default function SettingsPage() {
         <p className="text-xs text-muted-foreground">{t('settings.subtitle')}</p>
       </div>
 
-      {/* Language selector */}
       <GlassCard className="mb-4 anim-fadeup">
         <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase mb-3">{t('settings.language')}</p>
         <p className="text-xs text-muted-foreground mb-3">{t('settings.languageDesc')}</p>
         <div className="flex gap-2">
           {LANGUAGES.map(lang => (
-            <button
-              key={lang.code}
-              onClick={() => setLanguage(lang.code)}
+            <button key={lang.code} onClick={() => setLanguage(lang.code)}
               className={`flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all border ${
                 language === lang.code ? 'glow-button border-transparent' : 'glass-card text-muted-foreground border-border'
-              }`}
-            >
+              }`}>
               <span className="text-lg">{lang.flag}</span>
               {lang.label}
             </button>
@@ -109,9 +105,10 @@ export default function SettingsPage() {
       </GlassCard>
 
       <button onClick={() => navigate('/strategies')}
-        className="glow-button w-full py-3.5 px-4 rounded-xl text-sm font-display font-bold flex items-center justify-center gap-2 anim-fadeup-2 mb-4">
+        className="glass-card w-full py-3.5 px-4 rounded-xl text-sm font-display font-semibold flex items-center justify-center gap-2 anim-fadeup-2 mb-4 border border-border text-muted-foreground hover:text-foreground hover:border-primary/20 transition-all">
         <ClipboardList className="w-4 h-4" />
         {t('settings.manageStrategies')}
+        <ChevronRight className="w-4 h-4 ml-auto" />
       </button>
 
       <button onClick={handleLogout}

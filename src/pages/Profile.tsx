@@ -36,7 +36,7 @@ export default function Profile() {
   return (
     <div className="max-w-lg mx-auto px-4 py-6 pb-24 lg:pb-8 page-enter">
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-primary-foreground shrink-0"
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold text-primary-foreground shrink-0"
           style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--gold)))' }}>
           {(profile?.username || user?.email || 'U')[0].toUpperCase()}
         </div>
@@ -103,6 +103,11 @@ export default function Profile() {
           {saving ? t('common.saving') : t('common.save')}
         </button>
       </GlassCard>
+
+      <button onClick={() => navigate('/settings')}
+        className="w-full py-3 rounded-xl text-sm font-display font-semibold text-muted-foreground flex items-center justify-center gap-2 border border-border hover:bg-muted/30 transition-all mb-4">
+        ⚙️ {t('nav.settings')}
+      </button>
 
       <button onClick={async () => { await signOut(); navigate('/'); }}
         className="w-full py-3.5 rounded-xl text-destructive border border-destructive/20 hover:bg-destructive/5 transition-all font-display font-semibold text-sm flex items-center justify-center gap-2">
