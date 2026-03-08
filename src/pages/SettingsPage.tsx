@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { LogOut, ClipboardList, ChevronRight } from 'lucide-react';
+import { LogOut, ClipboardList, ChevronRight, Sun, Moon, Monitor } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/lib/auth';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
@@ -14,12 +15,19 @@ const LANGUAGES = [
   { code: 'es', flag: '🇪🇸', label: 'Español' },
 ];
 
+const THEMES = [
+  { value: 'dark' as const, icon: Moon, labelKey: 'settings.themeDark' },
+  { value: 'light' as const, icon: Sun, labelKey: 'settings.themeLight' },
+  { value: 'system' as const, icon: Monitor, labelKey: 'settings.themeSystem' },
+];
+
 export default function SettingsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile, updateProfile } = useProfile();
   const { signOut } = useAuth();
   const { language, setLanguage } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [market, setMarket] = useState('');
   const [maxRisk, setMaxRisk] = useState('');
   const [minRR, setMinRR] = useState('');
@@ -52,6 +60,27 @@ export default function SettingsPage() {
         <p className="text-xs text-muted-foreground">{t('settings.subtitle')}</p>
       </div>
 
+      {/* Theme selector */}
+      <GlassCard className="mb-4 anim-fadeup">
+        <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase mb-3">{t('settings.theme')}</p>
+        <p className="text-xs text-muted-foreground mb-3">{t('settings.themeDesc')}</p>
+        <div className="flex gap-2">
+          {THEMES.map(th => {
+            const Icon = th.icon;
+            return (
+              <button key={th.value} onClick={() => setTheme(th.value)}
+                className={`flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all border ${
+                  theme === th.value ? 'glow-button border-transparent' : 'glass-card text-muted-foreground border-border'
+                }`}>
+                <Icon className="w-4 h-4" />
+                {t(th.labelKey)}
+              </button>
+            );
+          })}
+        </div>
+      </GlassCard>
+
+      {/* Language selector */}
       <GlassCard className="mb-4 anim-fadeup">
         <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase mb-3">{t('settings.language')}</p>
         <p className="text-xs text-muted-foreground mb-3">{t('settings.languageDesc')}</p>

@@ -262,7 +262,12 @@
     "maxTrades": "Max trades",
     "manageStrategies": "Gérer les stratégies & checklists",
     "language": "Langue",
-    "languageDesc": "Choisis la langue de l'interface"
+    "languageDesc": "Choisis la langue de l'interface",
+    "theme": "Apparence",
+    "themeDesc": "Choisis le thème de l'interface",
+    "themeDark": "Sombre",
+    "themeLight": "Clair",
+    "themeSystem": "Auto"
   },
   "strategies": {
     "title": "Stratégies",
