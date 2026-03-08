@@ -1,4 +1,4 @@
-import { Home, BookOpen, BarChart3, Settings, Crosshair } from 'lucide-react';
+import { Home, BookOpen, BarChart3, Zap, User } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -11,9 +11,9 @@ export default function BottomNav() {
   const navItems = [
     { icon: Home, label: 'Home', path: '/dashboard' },
     { icon: BookOpen, label: t('nav.journal'), path: '/journal' },
-    { icon: Crosshair, label: t('nav.session'), path: '/session', isCenter: true },
+    { icon: Zap, label: t('nav.session'), path: '/session', isCenter: true },
     { icon: BarChart3, label: t('nav.stats'), path: '/stats' },
-    { icon: Settings, label: t('nav.settings'), path: '/settings' },
+    { icon: User, label: t('nav.profile'), path: '/profile' },
   ];
 
   return (
@@ -24,8 +24,9 @@ export default function BottomNav() {
           const Icon = item.icon;
           if (item.isCenter) {
             return (
-              <button key={item.path} onClick={() => navigate(item.path)} className="relative -mt-6">
+              <button key={item.path} onClick={() => navigate(item.path)} className="relative -mt-6 flex flex-col items-center">
                 <div className="glow-button w-14 h-14 rounded-full flex items-center justify-center"><Icon className="w-6 h-6" /></div>
+                <span className="text-[10px] font-semibold tracking-wider text-primary mt-1">{item.label}</span>
               </button>
             );
           }
