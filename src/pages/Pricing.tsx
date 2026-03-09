@@ -1,4 +1,10 @@
 import { useTranslation } from 'react-i18next';
+import { ExternalLink } from 'lucide-react';
+import { usePlanLimits } from '@/hooks/usePlanLimits';
+
+const GUMROAD_LINKS: Record<string, string> = {
+  pro: 'https://clemontia.gumroad.com/l/hajkd',
+};
 
 const PLAN_FEATURES = {
   free: [
@@ -36,12 +42,18 @@ const PLAN_FEATURES = {
 
 export default function Pricing() {
   const { t } = useTranslation();
+  const { plan: currentPlan } = usePlanLimits();
 
   const plans = [
-    { id: 'free' as const, price: '0', colorClass: 'text-muted-foreground', current: true },
+    { id: 'free' as const, price: '0', colorClass: 'text-muted-foreground' },
     { id: 'pro' as const, price: '12', colorClass: 'text-primary', popular: true },
-    { id: 'elite' as const, price: '29', colorClass: 'text-gold' },
+    { id: 'elite' as const, price: '29', colorClass: 'text-gold', comingSoon: true },
   ];
+
+  const handleSubscribe = (planId: string) => {
+    const url = GUMROAD_LINKS[planId];
+    if (url) window.open(url, '_blank', 'noopener');
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 pb-20 lg:pb-8 page-enter">
@@ -57,6 +69,9 @@ export default function Pricing() {
         {plans.map(plan => {
           const features = PLAN_FEATURES[plan.id];
           const planT = t(`pricing.${plan.id}`, { returnObjects: true }) as { name: string; tagline: string };
+          const isCurrent = plan.id === currentPlan;
+          const hasLink = !!GUMROAD_LINKS[plan.id];
+
           return (
             <div key={plan.id}
               className={`relative glass-card rounded-3xl p-6 flex flex-col transition-all hover:-translate-y-1 ${
@@ -86,13 +101,21 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <button disabled={plan.current}
-                className={`w-full py-3.5 rounded-xl font-display font-bold text-sm transition-all ${
-                  plan.current ? 'bg-muted/30 text-muted-foreground cursor-default'
+              <button
+                disabled={isCurrent || plan.comingSoon}
+                onClick={() => handleSubscribe(plan.id)}
+                className={`w-full py-3.5 rounded-xl font-display font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                  isCurrent ? 'bg-muted/30 text-muted-foreground cursor-default'
+                    : plan.comingSoon ? 'bg-muted/20 text-muted-foreground/60 cursor-not-allowed'
                     : plan.popular ? 'glow-button shadow-md shadow-primary/20'
                     : 'border border-border hover:border-primary/30 hover:bg-primary/5 text-foreground'
                 }`}>
-                {plan.current ? t('pricing.currentPlan') : t('pricing.switchTo', { plan: planT.name })}
+                {isCurrent
+                  ? t('pricing.currentPlan')
+                  : plan.comingSoon
+                    ? t('pricing.comingSoon', { defaultValue: 'Bientôt disponible' })
+                    : <>{t('pricing.switchTo', { plan: planT.name })} {hasLink && <ExternalLink className="w-3.5 h-3.5" />}</>
+                }
               </button>
             </div>
           );
